@@ -131,10 +131,86 @@
         box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
       }
 
-      .btn-primary:disabled {
+      .btn-danger {
+        background: linear-gradient(45deg, #f44336, #d32f2f);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+      }
+
+      .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+      }
+
+      .btn-danger:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
+      }
+
+      .btn-small {
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .modal-content h3 {
+        color: #f44336;
+        margin-bottom: 20px;
+      }
+
+      .modal-content p {
+        margin-bottom: 25px;
+        color: #666;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
       }
 
       .form-section {
@@ -420,8 +496,8 @@
                 <select id="pagamento" required>
                   <option value="">Selecione...</option>
                   <option value="Dinheiro">Dinheiro</option>
-                  <option value="Cartão de Débito">Débito</option>
-                  <option value="Cartão de Crédito">Crédito</option>
+                  <option value="Cartão de Débito">Cartão de Débito</option>
+                  <option value="Cartão de Crédito">Cartão de Crédito</option>
                   <option value="PIX">PIX</option>
                   <option value="Boleto">Boleto</option>
                 </select>
@@ -457,6 +533,7 @@
                 <th>Pagamento</th>
                 <th>Valor</th>
                 <th>Observações</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody id="vendasTableBody">
@@ -472,12 +549,30 @@
       </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="modalExclusao" class="modal">
+      <div class="modal-content">
+        <h3>⚠️ Confirmar Exclusão</h3>
+        <p>Tem certeza que deseja excluir esta venda?</p>
+        <div id="vendaDetalhes"></div>
+        <div class="modal-buttons">
+          <button class="btn-secondary" onclick="fecharModal()">
+            Cancelar
+          </button>
+          <button class="btn-danger" onclick="confirmarExclusao()">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
       // Variáveis globais
       let vendas = [];
       let caixaAberto = false;
       let webAppUrl = "";
       let proximoItem = 1;
+      let vendaParaExcluir = null;
 
       // Inicialização
       document.addEventListener("DOMContentLoaded", function () {
@@ -671,9 +766,34 @@
         }
       }
 
+      async function excluirVendaDoSheets(item) {
+        try {
+          const params = new URLSearchParams({
+            action: "excluirVenda",
+            item: item,
+            data: new Date().toISOString().split("T")[0],
+          });
+
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          const result = await response.json();
+          if (!result.success) {
+            throw new Error(result.message);
+          }
+          return result;
+        } catch (error) {
+          console.error("Erro ao excluir venda:", error);
+          throw error;
+        }
+      }
+
       function adicionarVendaATabela(venda) {
         const tbody = document.getElementById("vendasTableBody");
         const row = tbody.insertRow();
+        row.id = `venda-${venda.item}`;
 
         row.innerHTML = `
                 <td>${venda.item}</td>
@@ -681,6 +801,13 @@
                 <td>${venda.pagamento}</td>
                 <td>R$ ${venda.valor.toFixed(2).replace(".", ",")}</td>
                 <td>${venda.observacoes}</td>
+                <td>
+                    <button class="btn-danger btn-small" onclick="abrirModalExclusao(${
+                      venda.item
+                    })">
+                        🗑️ Excluir
+                    </button>
+                </td>
             `;
       }
 
@@ -741,6 +868,77 @@
           alertDiv.remove();
         }, 5000);
       }
+
+      // Funções de exclusão
+      function abrirModalExclusao(item) {
+        const venda = vendas.find((v) => v.item === item);
+        if (!venda) return;
+
+        vendaParaExcluir = venda;
+
+        const detalhes = document.getElementById("vendaDetalhes");
+        detalhes.innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <strong>Item:</strong> ${venda.item}<br>
+                    <strong>Produto:</strong> ${venda.produto}<br>
+                    <strong>Valor:</strong> R$ ${venda.valor
+                      .toFixed(2)
+                      .replace(".", ",")}<br>
+                    <strong>Pagamento:</strong> ${venda.pagamento}
+                </div>
+            `;
+
+        document.getElementById("modalExclusao").style.display = "block";
+      }
+
+      function fecharModal() {
+        document.getElementById("modalExclusao").style.display = "none";
+        vendaParaExcluir = null;
+      }
+
+      async function confirmarExclusao() {
+        if (!vendaParaExcluir) return;
+
+        const btnExcluir = document.querySelector(".modal-buttons .btn-danger");
+        btnExcluir.disabled = true;
+        btnExcluir.innerHTML = '<span class="loading"></span>Excluindo...';
+
+        try {
+          // Excluir do Google Sheets
+          await excluirVendaDoSheets(vendaParaExcluir.item);
+
+          // Excluir da lista local
+          vendas = vendas.filter((v) => v.item !== vendaParaExcluir.item);
+
+          // Remover da tabela
+          const row = document.getElementById(`venda-${vendaParaExcluir.item}`);
+          if (row) {
+            row.remove();
+          }
+
+          // Atualizar totais
+          atualizarTotalVendas();
+
+          // Fechar modal
+          fecharModal();
+
+          mostrarAlerta("Venda excluída com sucesso!", "success");
+        } catch (error) {
+          mostrarAlerta("Erro ao excluir venda. Tente novamente.", "error");
+          console.error("Erro ao excluir:", error);
+        } finally {
+          btnExcluir.disabled = false;
+          btnExcluir.innerHTML = "🗑️ Excluir";
+        }
+      }
+
+      // Fechar modal ao clicar fora
+      window.onclick = function (event) {
+        const modal = document.getElementById("modalExclusao");
+        if (event.target === modal) {
+          fecharModal();
+        }
+      };
 
       // Inicializar status do caixa
       atualizarStatusCaixa();
