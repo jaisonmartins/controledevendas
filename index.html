@@ -213,6 +213,25 @@
         transform: translateY(-1px);
       }
 
+      .categoria-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .categoria-acessorios {
+        background: linear-gradient(45deg, #17a2b8, #138496);
+        color: white;
+      }
+
+      .categoria-brinquedo {
+        background: linear-gradient(45deg, #fd7e14, #e8620e);
+        color: white;
+      }
+
       .form-section {
         background: #f8f9fa;
         border-radius: 15px;
@@ -376,24 +395,69 @@
         padding: 25px;
         margin-bottom: 30px;
         border: 2px solid #ffeaa7;
+        animation: slideDown 0.3s ease-out;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .config-section h3 {
         color: #856404;
         margin-bottom: 15px;
+        text-align: center;
       }
 
       .config-section p {
         color: #856404;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
+        text-align: center;
       }
 
       .config-section input {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         border: 2px solid #ddd;
         border-radius: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
+        font-size: 1em;
+      }
+
+      .config-section input:focus {
+        border-color: #856404;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(133, 100, 4, 0.1);
+      }
+
+      .btn-config {
+        background: linear-gradient(45deg, #6c757d, #5a6268);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-config:hover {
+        background: linear-gradient(45deg, #5a6268, #495057);
+        transform: translateY(-1px);
+      }
+
+      .status-configured {
+        color: #28a745 !important;
+      }
+
+      .status-not-configured {
+        color: #dc3545 !important;
       }
 
       @media (max-width: 768px) {
@@ -425,12 +489,9 @@
 
       <div class="main-content">
         <!-- Seção de Configuração -->
-        <div class="config-section" id="configSection">
-          <h3>⚙️ Configuração Inicial</h3>
-          <p>
-            Para começar, você precisa configurar a integração com o Google
-            Sheets:
-          </p>
+        <div class="config-section" id="configSection" style="display: none">
+          <h3>⚙️ Configuração do Sistema</h3>
+          <p>Configure a integração com o Google Sheets:</p>
           <div class="form-group">
             <label for="sheetUrl">URL do Google Sheets:</label>
             <input
@@ -447,9 +508,21 @@
               placeholder="https://script.google.com/macros/s/SEU_ID_AQUI/exec"
             />
           </div>
-          <button class="btn-primary" onclick="salvarConfiguracao()">
-            Salvar Configuração
-          </button>
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              justify-content: center;
+              margin-top: 20px;
+            "
+          >
+            <button class="btn-primary" onclick="salvarConfiguracao()">
+              Salvar Configuração
+            </button>
+            <button class="btn-secondary" onclick="ocultarConfiguracao()">
+              Cancelar
+            </button>
+          </div>
         </div>
 
         <!-- Status do Sistema -->
@@ -466,6 +539,15 @@
             <div class="status-item">
               <h3>📊 Vendas do Dia</h3>
               <div class="status-value" id="vendasDia">0</div>
+            </div>
+            <div class="status-item">
+              <h3>⚙️ Configuração</h3>
+              <button
+                class="btn-secondary btn-small"
+                onclick="mostrarConfiguracao()"
+              >
+                🔧 Configurar
+              </button>
             </div>
           </div>
           <div style="margin-top: 20px; text-align: center">
@@ -492,14 +574,24 @@
                 <input type="text" id="produto" required />
               </div>
               <div class="form-group">
+                <label for="categoria">Categoria:</label>
+                <select id="categoria" required>
+                  <option value="">Selecione...</option>
+                  <option value="Acessórios">💍​ Acessórios</option>
+                  <option value="Brinquedo">🚀​ Brinquedo</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label for="pagamento">Tipo de Pagamento:</label>
                 <select id="pagamento" required>
                   <option value="">Selecione...</option>
-                  <option value="Dinheiro">Dinheiro</option>
-                  <option value="Cartão de Débito">Cartão de Débito</option>
-                  <option value="Cartão de Crédito">Cartão de Crédito</option>
-                  <option value="PIX">PIX</option>
-                  <option value="Boleto">Boleto</option>
+                  <option value="Dinheiro">​💸​Dinheiro</option>
+                  <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                  <option value="Cartão de Crédito">
+                    💳 Cartão de Crédito
+                  </option>
+                  <option value="PIX">📱​ PIX</option>
+                  <option value="Boleto">📄 Boleto</option>
                 </select>
               </div>
               <div class="form-group">
@@ -530,6 +622,7 @@
               <tr>
                 <th>Item</th>
                 <th>Produto</th>
+                <th>Categoria</th>
                 <th>Pagamento</th>
                 <th>Valor</th>
                 <th>Observações</th>
@@ -578,10 +671,24 @@
       document.addEventListener("DOMContentLoaded", function () {
         atualizarDataAtual();
         carregarConfiguracao();
+        atualizarStatusConfiguracao();
         setInterval(atualizarDataAtual, 60000); // Atualiza a cada minuto
       });
 
       // Funções de configuração
+      function mostrarConfiguracao() {
+        document.getElementById("configSection").style.display = "block";
+        // Scroll suave para a seção de configuração
+        document.getElementById("configSection").scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      function ocultarConfiguracao() {
+        document.getElementById("configSection").style.display = "none";
+      }
+
       function salvarConfiguracao() {
         const sheetUrl = document.getElementById("sheetUrl").value;
         const webAppUrlInput = document.getElementById("webAppUrl").value;
@@ -595,7 +702,8 @@
         localStorage.setItem("webAppUrl", webAppUrlInput);
         webAppUrl = webAppUrlInput;
 
-        document.getElementById("configSection").style.display = "none";
+        ocultarConfiguracao();
+        atualizarStatusConfiguracao();
         mostrarAlerta("Configuração salva com sucesso!", "success");
       }
 
@@ -607,7 +715,30 @@
           document.getElementById("sheetUrl").value = sheetUrl;
           document.getElementById("webAppUrl").value = savedWebAppUrl;
           webAppUrl = savedWebAppUrl;
-          document.getElementById("configSection").style.display = "none";
+          atualizarStatusConfiguracao();
+        } else {
+          // Se não há configuração, mostra automaticamente na primeira vez
+          setTimeout(() => {
+            if (!localStorage.getItem("configShown")) {
+              mostrarConfiguracao();
+              localStorage.setItem("configShown", "true");
+              mostrarAlerta(
+                "Configure as URLs para começar a usar o sistema!",
+                "warning"
+              );
+            }
+          }, 1000);
+        }
+      }
+
+      function atualizarStatusConfiguracao() {
+        const configBtn = document.querySelector(".status-item button");
+        if (webAppUrl) {
+          configBtn.textContent = "✅ Configurado";
+          configBtn.className = "btn-secondary btn-small status-configured";
+        } else {
+          configBtn.textContent = "⚠️ Configurar";
+          configBtn.className = "btn-secondary btn-small status-not-configured";
         }
       }
 
@@ -643,10 +774,8 @@
       // Funções do caixa
       async function abrirCaixa() {
         if (!webAppUrl) {
-          mostrarAlerta(
-            "Configure primeiro a URL do Google Apps Script!",
-            "error"
-          );
+          mostrarAlerta("Configure primeiro as URLs do sistema!", "error");
+          mostrarConfiguracao();
           return;
         }
 
@@ -685,6 +814,7 @@
             "error"
           );
           console.error("Erro:", error);
+          mostrarConfiguracao();
         } finally {
           btn.disabled = false;
           atualizarStatusCaixa();
@@ -706,11 +836,12 @@
           e.preventDefault();
 
           const produto = document.getElementById("produto").value;
+          const categoria = document.getElementById("categoria").value;
           const pagamento = document.getElementById("pagamento").value;
           const valor = parseFloat(document.getElementById("valor").value);
           const observacoes = document.getElementById("observacoes").value;
 
-          if (!produto || !pagamento || !valor) {
+          if (!produto || !categoria || !pagamento || !valor) {
             mostrarAlerta(
               "Por favor, preencha todos os campos obrigatórios.",
               "error"
@@ -721,6 +852,7 @@
           const venda = {
             item: proximoItem++,
             produto: produto,
+            categoria: categoria,
             pagamento: pagamento,
             valor: valor,
             observacoes: observacoes,
@@ -798,6 +930,9 @@
         row.innerHTML = `
                 <td>${venda.item}</td>
                 <td>${venda.produto}</td>
+                <td><span class="categoria-badge categoria-${venda.categoria
+                  .toLowerCase()
+                  .replace("ó", "o")}">${venda.categoria}</span></td>
                 <td>${venda.pagamento}</td>
                 <td>R$ ${venda.valor.toFixed(2).replace(".", ",")}</td>
                 <td>${venda.observacoes}</td>
@@ -881,6 +1016,9 @@
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
                     <strong>Item:</strong> ${venda.item}<br>
                     <strong>Produto:</strong> ${venda.produto}<br>
+                    <strong>Categoria:</strong> <span class="categoria-badge categoria-${venda.categoria
+                      .toLowerCase()
+                      .replace("ó", "o")}">${venda.categoria}</span><br>
                     <strong>Valor:</strong> R$ ${venda.valor
                       .toFixed(2)
                       .replace(".", ",")}<br>
