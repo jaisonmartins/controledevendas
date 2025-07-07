@@ -1,175 +1,146 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Controle de Vendas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-50 min-h-screen text-gray-800">
-    <!-- Topo -->
-    <header class="bg-white shadow sticky top-0 z-10">
-      <div
-        class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"
-      >
-        <div class="flex items-center space-x-4">
-          <img
-            src="https://img.icons8.com/emoji/48/money-with-wings.png"
-            alt="Logo"
-            class="w-10 h-10"
-          />
-          <h1 class="text-2xl font-bold text-gray-700">Caixa do Jaison</h1>
-        </div>
-        <span class="text-sm text-gray-400"
-          >📅 <span id="dataHoje"></span
-        ></span>
+<head>
+  <meta charset="UTF-8" />
+  <title>Controle de Vendas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+  <!-- Topo -->
+  <header class="bg-white shadow sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <img src="https://img.icons8.com/emoji/48/money-with-wings.png" alt="Logo" class="w-10 h-10" />
+        <h1 class="text-2xl font-bold text-gray-700">Caixa do Jaison</h1>
       </div>
-    </header>
+      <span class="text-sm text-gray-400">📅 <span id="dataHoje"></span></span>
+    </div>
+  </header>
 
-    <!-- Conteúdo principal -->
-    <main class="max-w-4xl mx-auto mt-10 px-4">
-      <section class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-semibold">Registrar Venda</h2>
-          <button
-            onclick="abrirCaixa()"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Abrir Caixa
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label class="block font-medium">Nome do Produto:</label>
-            <input
-              type="text"
-              id="produto"
-              class="w-full mt-1 p-2 border rounded"
-              placeholder="Ex: Coca-Cola 2L"
-            />
-          </div>
-          <div>
-            <label class="block font-medium">Valor (R$):</label>
-            <input
-              type="number"
-              id="valor"
-              step="0.01"
-              class="w-full mt-1 p-2 border rounded"
-              placeholder="Ex: 7.50"
-            />
-          </div>
-          <div>
-            <label class="block font-medium">Observações:</label>
-            <input
-              type="text"
-              id="observacao"
-              class="w-full mt-1 p-2 border rounded"
-              placeholder="Opcional"
-            />
-          </div>
-        </div>
-
-        <button
-          onclick="adicionarVenda()"
-          class="mt-6 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded transition"
-        >
-          Adicionar Venda
+  <!-- Conteúdo principal -->
+  <main class="max-w-4xl mx-auto mt-10 px-4">
+    <section class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Registrar Venda</h2>
+        <button onclick="abrirCaixa()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+          Abrir Caixa
         </button>
-      </section>
+      </div>
 
-      <!-- Tabela de vendas -->
-      <section class="mt-10 bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold mb-4">Vendas do Dia</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border border-gray-200">
-            <thead class="bg-gray-100 text-gray-600 uppercase text-sm">
-              <tr>
-                <th class="p-3 border">Produto</th>
-                <th class="p-3 border">Valor</th>
-                <th class="p-3 border">Observações</th>
-              </tr>
-            </thead>
-            <tbody id="listaVendas" class="text-gray-700">
-              <!-- Linhas adicionadas aqui -->
-            </tbody>
-            <tfoot>
-              <tr class="bg-gray-50 font-semibold text-gray-800">
-                <td class="p-3 border">Total</td>
-                <td class="p-3 border" id="total" colspan="2">R$ 0,00</td>
-              </tr>
-            </tfoot>
-          </table>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block font-medium">Nome do Produto:</label>
+          <input type="text" id="produto" class="w-full mt-1 p-2 border rounded" placeholder="Ex: Coca-Cola 2L" />
         </div>
-      </section>
-    </main>
+        <div>
+          <label class="block font-medium">Valor (R$):</label>
+          <input type="number" id="valor" step="0.01" class="w-full mt-1 p-2 border rounded" placeholder="Ex: 7.50" />
+        </div>
+        <div>
+          <label class="block font-medium">Observações:</label>
+          <input type="text" id="observacao" class="w-full mt-1 p-2 border rounded" placeholder="Opcional" />
+        </div>
+      </div>
 
-    <!-- Scripts -->
-    <script>
-      const endpoint =
-        "https://script.google.com/macros/s/AKfycbzs3zC4RQBX5_rkaHKHGUGR6tj-qyfyuzAyHL8zqOQDMJwV-LqxZGM4Bwz9nP1GyAzD/exec";
-      const lista = document.getElementById("listaVendas");
-      const totalSpan = document.getElementById("total");
-      let total = 0;
+      <button onclick="adicionarVenda()" class="mt-6 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded transition">
+        Adicionar Venda
+      </button>
+    </section>
 
-      function abrirCaixa() {
-        const dados = {
-          abrirCaixa: true,
-        };
+    <!-- Tabela de vendas -->
+    <section class="mt-10 bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-4">Vendas do Dia</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border border-gray-200">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-sm">
+            <tr>
+              <th class="p-3 border">Produto</th>
+              <th class="p-3 border">Valor</th>
+              <th class="p-3 border">Observações</th>
+            </tr>
+          </thead>
+          <tbody id="listaVendas" class="text-gray-700"></tbody>
+          <tfoot>
+            <tr class="bg-gray-50 font-semibold text-gray-800">
+              <td class="p-3 border">Total</td>
+              <td class="p-3 border" id="total" colspan="2">R$ 0,00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
 
-        const formData = new URLSearchParams();
-        formData.append("dados", JSON.stringify(dados));
+  <!-- Scripts -->
+  <script>
+    const endpoint = "https://script.google.com/macros/s/AKfycbzs3zC4RQBX5_rkaHKHGUGR6tj-qyfyuzAyHL8zqOQDMJwV-LqxZGM4Bwz9nP1GyAzD/exec";
+    const lista = document.getElementById("listaVendas");
+    const totalSpan = document.getElementById("total");
+    let total = 0;
 
-        fetch(
-          "https://script.google.com/macros/s/AKfycbzs3zC4RQBX5_rkaHKHGUGR6tj-qyfyuzAyHL8zqOQDMJwV-LqxZGM4Bwz9nP1GyAzD/exec",
-          {
-            method: "POST",
-            body: formData,
-          }
-        )
-          .then((response) => response.text())
-          .then((data) => {
-            alert("Caixa aberto com sucesso!");
-            console.log(data);
-          })
-          .catch((error) => {
-            console.error("Erro ao abrir o caixa:", error);
-          });
+    function abrirCaixa() {
+      const dados = { abrirCaixa: true };
+      const formData = new URLSearchParams();
+      formData.append("dados", JSON.stringify(dados));
+
+      fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.mensagem);
+      })
+      .catch((error) => {
+        console.error("Erro ao abrir o caixa:", error);
+        alert("Erro ao abrir o caixa.");
+      });
+    }
+
+    function adicionarVenda() {
+      const produto = document.getElementById("produto").value.trim();
+      const valor = parseFloat(document.getElementById("valor").value);
+      const observacao = document.getElementById("observacao").value.trim();
+
+      if (!produto || isNaN(valor)) {
+        alert("Preencha o nome do produto e valor corretamente!");
+        return;
       }
 
-      function adicionarVenda() {
-        const produto = document.getElementById("produto").value.trim();
-        const valor = parseFloat(document.getElementById("valor").value);
-        const observacao = document.getElementById("observacao").value.trim();
-
-        if (!produto || isNaN(valor)) {
-          alert("Preencha o nome do produto e valor corretamente!");
-          return;
-        }
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
         <td class="p-3 border">${produto}</td>
         <td class="p-3 border">R$ ${valor.toFixed(2)}</td>
         <td class="p-3 border">${observacao}</td>
       `;
-        lista.appendChild(tr);
+      lista.appendChild(tr);
 
-        total += valor;
-        totalSpan.textContent = `R$ ${total.toFixed(2)}`;
+      total += valor;
+      totalSpan.textContent = `R$ ${total.toFixed(2)}`;
 
-        fetch(endpoint, {
-          method: "POST",
-          body: JSON.stringify({ produto, valor, observacao }),
-          headers: { "Content-Type": "application/json" },
-        }).catch(() => alert("Erro ao salvar venda!"));
+      const dados = { produto, valor, observacao };
+      const formData = new URLSearchParams();
+      formData.append("dados", JSON.stringify(dados));
 
-        document.getElementById("produto").value = "";
-        document.getElementById("valor").value = "";
-        document.getElementById("observacao").value = "";
-      }
+      fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Venda registrada:", data);
+      })
+      .catch((error) => {
+        console.error("Erro ao salvar venda!", error);
+        alert("Erro ao salvar venda!");
+      });
 
-      document.getElementById("dataHoje").textContent =
-        new Date().toLocaleDateString("pt-BR");
-    </script>
-  </body>
+      document.getElementById("produto").value = "";
+      document.getElementById("valor").value = "";
+      document.getElementById("observacao").value = "";
+    }
+
+    document.getElementById("dataHoje").textContent = new Date().toLocaleDateString("pt-BR");
+  </script>
+</body>
 </html>
