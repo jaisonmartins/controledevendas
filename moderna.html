@@ -1,1157 +1,1014 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Controle de Vendas</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-      * {
-        font-family: "Inter", sans-serif;
-      }
-
-      :root {
-        --primary-gradient: linear-gradient(135deg, #CF9CBF 0%, #CA689A 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
-        --dark-gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-      }
-
-      .gradient-primary {
-        background: var(--primary-gradient);
-      }
-
-      .gradient-success {
-        background: var(--success-gradient);
-      }
-
-      .gradient-warning {
-        background: var(--warning-gradient);
-      }
-
-      .gradient-danger {
-        background: var(--danger-gradient);
-      }
-
-      .gradient-dark {
-        background: var(--dark-gradient);
-      }
-
-      .glass-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-      }
-
-      .floating-card {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-          0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .floating-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      }
-
-      .pulse-animation {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        50% {
-          opacity: 0.8;
-        }
-      }
-
-      .bounce-in {
-        animation: bounceIn 0.8s ease-out;
-      }
-
-      @keyframes bounceIn {
-        0% {
-          opacity: 0;
-          transform: scale(0.3);
-        }
-        50% {
-          opacity: 1;
-          transform: scale(1.05);
-        }
-        70% {
-          transform: scale(0.9);
-        }
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
-      .slide-in {
-        animation: slideIn 0.6s ease-out;
-      }
-
-      @keyframes slideIn {
-        0% {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .loading-spinner {
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .category-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .category-acessorios {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-
-      .category-brinquedo {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-      }
-
-      .status-indicator {
-        position: relative;
-        display: inline-block;
-      }
-
-      .status-indicator::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        border: 2px solid white;
-      }
-
-      .status-online::before {
-        background: #48bb78;
-        animation: pulse 2s infinite;
-      }
-
-      .status-offline::before {
-        background: #f56565;
-      }
-
-      .modern-input {
-        transition: all 0.3s ease;
-        border: 2px solid #e2e8f0;
-        background: white;
-      }
-
-      .modern-input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        outline: none;
-      }
-
-      .modern-button {
-        transition: all 0.3s ease;
-        font-weight: 600;
-        letter-spacing: 0.025em;
-      }
-
-      .modern-button:hover {
-        transform: translateY(-2px);
-      }
-
-      .modern-button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none !important;
-      }
-
-      .modern-button:disabled:hover {
-        transform: none !important;
-      }
-
-      .stats-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-      }
-
-      .stats-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-      }
-
-      .modal-backdrop {
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-      }
-
-      .table-modern {
-        background: white;
-        border-radius: 1rem;
-        overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      }
-
-      .table-modern th {
-        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-        font-weight: 600;
-        color: #2d3748;
-      }
-
-      .table-modern tr:hover {
-        background: #f7fafc;
-      }
-
-      .alert-modern {
-        border-radius: 0.75rem;
-        padding: 1rem 1.5rem;
-        margin-bottom: 1rem;
-        border-left: 4px solid;
-        animation: slideIn 0.3s ease-out;
-      }
-
-      .alert-success {
-        background: #f0fff4;
-        border-color: #48bb78;
-        color: #22543d;
-      }
-
-      .alert-error {
-        background: #fef5e7;
-        border-color: #f56565;
-        color: #742a2a;
-      }
-
-      .alert-warning {
-        background: #fffbeb;
-        border-color: #ed8936;
-        color: #7c2d12;
-      }
-
-      @media print {
-        .no-print {
-          display: none !important;
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
+            --dark-gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
         }
 
-        body {
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+        .gradient-primary {
+            background: var(--primary-gradient);
+        }
+        
+        .gradient-success {
+            background: var(--success-gradient);
+        }
+        
+        .gradient-warning {
+            background: var(--warning-gradient);
+        }
+        
+        .gradient-danger {
+            background: var(--danger-gradient);
+        }
+        
+        .gradient-dark {
+            background: var(--dark-gradient);
         }
 
-        .container {
-          max-width: none !important;
-          padding: 0 !important;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
         }
 
         .floating-card {
-          box-shadow: none !important;
-          border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-      }
+
+        .floating-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .8;
+            }
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .slide-out {
+            animation: slideOut 0.5s ease-in-out forwards;
+        }
+
+        @keyframes slideOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 500px;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+                max-height: 0;
+            }
+        }
+
+        #statusDashboard {
+            transition: all 0.5s ease-in-out;
+        }
+
+        #toggleSection {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .category-acessorios {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .category-brinquedo {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .status-indicator {
+            position: relative;
+            display: inline-block;
+        }
+
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .status-online::before {
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+
+        .status-offline::before {
+            background: #f56565;
+        }
+
+        .modern-input {
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+            background: white;
+        }
+
+        .modern-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .modern-button {
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+
+        .modern-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .modern-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .modern-button:disabled:hover {
+            transform: none !important;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .table-modern {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-modern th {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .table-modern tr:hover {
+            background: #f7fafc;
+        }
+
+        .alert-modern {
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            border-color: #48bb78;
+            color: #22543d;
+        }
+
+        .alert-error {
+            background: #fef5e7;
+            border-color: #f56565;
+            color: #742a2a;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-color: #ed8936;
+            color: #7c2d12;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .container {
+                max-width: none !important;
+                padding: 0 !important;
+            }
+            
+            .floating-card {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+        }
     </style>
-  </head>
-  <body class="min-h-screen bg-gray-50">
+</head>
+<body class="min-h-screen bg-gray-50">
     <!-- Background Pattern -->
     <div class="fixed inset-0 opacity-5 pointer-events-none">
-      <div
-        class="absolute inset-0"
-        style="
-          background-image: radial-gradient(
-            circle at 1px 1px,
-            #667eea 1px,
-            transparent 0
-          );
-          background-size: 20px 20px;
-        "
-      ></div>
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, #667eea 1px, transparent 0); background-size: 20px 20px;"></div>
     </div>
 
     <!-- Main Container -->
     <div class="relative z-10 max-w-7xl mx-auto px-4 py-8">
-      <!-- Header -->
-      <div class="text-center mb-12">
-        <div
-          class="gradient-primary rounded-2xl p-8 text-white shadow-2xl floating-card"
-        >
-          <div class="flex items-center justify-center mb-4">
-            <div
-              class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4"
-            >
-              <i class="fas fa-cash-register text-3xl"></i>
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="gradient-primary rounded-2xl p-8 text-white shadow-2xl floating-card">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-cash-register text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2">Sistema de Controle de Vendas</h1>
+                        <p class="text-xl opacity-90">Gerencie suas vendas com inteligência e elegância</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center space-x-4 text-sm">
+                    <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
+                        <i class="fas fa-cloud mr-2"></i>
+                        Integração Google Sheets
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Controle em Tempo Real
+                    </div>
+                </div>
             </div>
-            <div>
-              <h1 class="text-4xl font-bold mb-2">
-                Sistema de Controle de Vendas
-              </h1>
-              <p class="text-xl opacity-90">
-                Gerencie suas vendas com inteligência e elegância
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center justify-center space-x-4 text-sm">
-            <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
-              <i class="fas fa-cloud mr-2"></i>
-              Integração Google Sheets
-            </div>
-            <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
-              <i class="fas fa-chart-line mr-2"></i>
-              Controle em Tempo Real
-            </div>
-          </div>
         </div>
-      </div>
 
-      <!-- Configuration Section -->
-      <div id="configSection" class="hidden mb-8">
-        <div
-          class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 slide-in"
-        >
-          <div class="flex items-center mb-4">
-            <div
-              class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4"
-            >
-              <i class="fas fa-cog text-yellow-600 text-xl"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-yellow-800">
-                Configuração do Sistema
-              </h3>
-              <p class="text-yellow-700">
-                Configure a integração com o Google Sheets
-              </p>
-            </div>
-          </div>
-          <div class="grid md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-table mr-2"></i>URL do Google Sheets
-              </label>
-              <input
-                type="url"
-                id="sheetUrl"
-                class="w-full px-4 py-3 rounded-lg modern-input"
-                placeholder="https://docs.google.com/spreadsheets/d/..."
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-code mr-2"></i>URL do Google Apps Script
-              </label>
-              <input
-                type="url"
-                id="webAppUrl"
-                class="w-full px-4 py-3 rounded-lg modern-input"
-                placeholder="https://script.google.com/macros/s/..."
-              />
-            </div>
-          </div>
-          <div class="flex justify-center space-x-4 mt-6">
-            <button
-              onclick="salvarConfiguracao()"
-              class="gradient-success text-white px-6 py-3 rounded-lg modern-button"
-            >
-              <i class="fas fa-save mr-2"></i>Salvar Configuração
+        <!-- Toggle Button (só aparece quando caixa está aberto) -->
+        <div id="toggleSection" class="hidden text-center mb-6">
+            <button id="btnToggleInfo" onclick="toggleInfoSections()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold modern-button transition-all duration-300">
+                <i class="fas fa-eye-slash mr-2"></i>Mostrar Informações do Sistema
             </button>
-            <button
-              onclick="ocultarConfiguracao()"
-              class="bg-gray-500 text-white px-6 py-3 rounded-lg modern-button"
-            >
-              <i class="fas fa-times mr-2"></i>Cancelar
+        </div>
+
+        <!-- Configuration Section -->
+        <div id="configSection" class="hidden mb-8 transition-all duration-500 ease-in-out">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 slide-in">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-cog text-yellow-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-yellow-800">Configuração do Sistema</h3>
+                        <p class="text-yellow-700">Configure a integração com o Google Sheets</p>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-table mr-2"></i>URL do Google Sheets
+                        </label>
+                        <input type="url" id="sheetUrl" class="w-full px-4 py-3 rounded-lg modern-input" placeholder="https://docs.google.com/spreadsheets/d/...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-code mr-2"></i>URL do Google Apps Script
+                        </label>
+                        <input type="url" id="webAppUrl" class="w-full px-4 py-3 rounded-lg modern-input" placeholder="https://script.google.com/macros/s/...">
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-4 mt-6">
+                    <button onclick="salvarConfiguracao()" class="gradient-success text-white px-6 py-3 rounded-lg modern-button">
+                        <i class="fas fa-save mr-2"></i>Salvar Configuração
+                    </button>
+                    <button onclick="ocultarConfiguracao()" class="bg-gray-500 text-white px-6 py-3 rounded-lg modern-button">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Dashboard -->
+        <div id="statusDashboard" class="mb-8 transition-all duration-500 ease-in-out">
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="stats-card text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-1">Data Atual</h3>
+                    <div id="dataAtual" class="text-lg font-bold text-gray-800">--</div>
+                </div>
+                
+                <div class="stats-card text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-cash-register text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-1">Status do Caixa</h3>
+                    <div id="statusCaixa" class="text-lg font-bold text-red-600">Fechado</div>
+                </div>
+                
+                <div class="stats-card text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-shopping-cart text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-1">Vendas do Dia</h3>
+                    <div id="vendasDia" class="text-lg font-bold text-purple-600">0</div>
+                </div>
+                
+                <div class="stats-card text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-cog text-orange-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-1">Configuração</h3>
+                    <button onclick="mostrarConfiguracao()" class="bg-orange-500 text-white px-3 py-1 rounded-full text-sm modern-button">
+                        <i class="fas fa-wrench mr-1"></i>Configurar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cash Control -->
+        <div class="text-center mb-8">
+            <button id="btnAbrirCaixa" onclick="abrirCaixa()" class="gradient-primary text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button floating-card">
+                <i class="fas fa-unlock mr-2"></i>Abrir Caixa
             </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Status Dashboard -->
-      <div class="grid md:grid-cols-4 gap-6 mb-8">
-        <div class="stats-card text-center">
-          <div
-            class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3"
-          >
-            <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
-          </div>
-          <h3 class="text-sm font-semibold text-gray-600 mb-1">Data Atual</h3>
-          <div id="dataAtual" class="text-lg font-bold text-gray-800">--</div>
         </div>
 
-        <div class="stats-card text-center">
-          <div
-            class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3"
-          >
-            <i class="fas fa-cash-register text-green-600 text-xl"></i>
-          </div>
-          <h3 class="text-sm font-semibold text-gray-600 mb-1">
-            Status do Caixa
-          </h3>
-          <div id="statusCaixa" class="text-lg font-bold text-red-600">
-            Fechado
-          </div>
-        </div>
+        <!-- Alerts Container -->
+        <div id="alertContainer" class="mb-8"></div>
 
-        <div class="stats-card text-center">
-          <div
-            class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3"
-          >
-            <i class="fas fa-shopping-cart text-purple-600 text-xl"></i>
-          </div>
-          <h3 class="text-sm font-semibold text-gray-600 mb-1">
-            Vendas do Dia
-          </h3>
-          <div id="vendasDia" class="text-lg font-bold text-purple-600">0</div>
-        </div>
-
-        <div class="stats-card text-center">
-          <div
-            class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3"
-          >
-            <i class="fas fa-cog text-orange-600 text-xl"></i>
-          </div>
-          <h3 class="text-sm font-semibold text-gray-600 mb-1">Configuração</h3>
-          <button
-            onclick="mostrarConfiguracao()"
-            class="bg-orange-500 text-white px-3 py-1 rounded-full text-sm modern-button"
-          >
-            <i class="fas fa-wrench mr-1"></i>Configurar
-          </button>
-        </div>
-      </div>
-
-      <!-- Cash Control -->
-      <div class="text-center mb-8">
-        <button
-          id="btnAbrirCaixa"
-          onclick="abrirCaixa()"
-          class="gradient-primary text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button floating-card"
-        >
-          <i class="fas fa-unlock mr-2"></i>Abrir Caixa
-        </button>
-      </div>
-
-      <!-- Alerts Container -->
-      <div id="alertContainer" class="mb-8"></div>
-
-      <!-- Sales Form -->
-      <div id="formSection" class="hidden mb-8">
-        <div class="bg-white rounded-2xl shadow-lg p-8 floating-card">
-          <div class="flex items-center mb-6">
-            <div
-              class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4"
-            >
-              <i class="fas fa-plus text-blue-600 text-xl"></i>
+        <!-- Sales Form -->
+        <div id="formSection" class="hidden mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-8 floating-card">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-plus text-blue-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Registrar Nova Venda</h2>
+                </div>
+                
+                <form id="vendaForm">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-box mr-2"></i>Produto
+                            </label>
+                            <input type="text" id="produto" required class="w-full px-4 py-3 rounded-lg modern-input">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tags mr-2"></i>Categoria
+                            </label>
+                            <select id="categoria" required class="w-full px-4 py-3 rounded-lg modern-input">
+                                <option value="">Selecione...</option>
+                                <option value="Acessórios">💍 Acessórios</option>
+                                <option value="Brinquedo">🚀 Brinquedo</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-credit-card mr-2"></i>Tipo de Pagamento
+                            </label>
+                            <select id="pagamento" required class="w-full px-4 py-3 rounded-lg modern-input">
+                                <option value="">Selecione...</option>
+                                <option value="Dinheiro">💸 Dinheiro</option>
+                                <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                                <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
+                                <option value="PIX">📱 PIX</option>
+                                <option value="Boleto">📄 Boleto</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-dollar-sign mr-2"></i>Valor (R$)
+                            </label>
+                            <input type="number" id="valor" step="0.01" min="0" required class="w-full px-4 py-3 rounded-lg modern-input">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-comment mr-2"></i>Observações
+                            </label>
+                            <textarea id="observacoes" rows="3" class="w-full px-4 py-3 rounded-lg modern-input" placeholder="Informações adicionais..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-6">
+                        <button id="btnAdicionarVenda" type="submit" class="gradient-success text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button">
+                            <i class="fas fa-plus mr-2"></i>Adicionar Venda
+                        </button>
+                    </div>
+                </form>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800">
-              Registrar Nova Venda
-            </h2>
-          </div>
-
-          <form id="vendaForm">
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-box mr-2"></i>Produto
-                </label>
-                <input
-                  type="text"
-                  id="produto"
-                  required
-                  class="w-full px-4 py-3 rounded-lg modern-input"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-tags mr-2"></i>Categoria
-                </label>
-                <select
-                  id="categoria"
-                  required
-                  class="w-full px-4 py-3 rounded-lg modern-input"
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Acessórios">💍 Acessórios</option>
-                  <option value="Brinquedo">🚀 Brinquedo</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-credit-card mr-2"></i>Tipo de Pagamento
-                </label>
-                <select
-                  id="pagamento"
-                  required
-                  class="w-full px-4 py-3 rounded-lg modern-input"
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Dinheiro">💸 Dinheiro</option>
-                  <option value="Cartão de Débito">💳 Cartão de Débito</option>
-                  <option value="Cartão de Crédito">
-                    💳 Cartão de Crédito
-                  </option>
-                  <option value="PIX">📱 PIX</option>
-                  <option value="Boleto">📄 Boleto</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-dollar-sign mr-2"></i>Valor (R$)
-                </label>
-                <input
-                  type="number"
-                  id="valor"
-                  step="0.01"
-                  min="0"
-                  required
-                  class="w-full px-4 py-3 rounded-lg modern-input"
-                />
-              </div>
-
-              <div class="md:col-span-2">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-comment mr-2"></i>Observações
-                </label>
-                <textarea
-                  id="observacoes"
-                  rows="3"
-                  class="w-full px-4 py-3 rounded-lg modern-input"
-                  placeholder="Informações adicionais..."
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="text-center mt-6">
-              <button
-                id="btnAdicionarVenda"
-                type="submit"
-                class="gradient-success text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button"
-              >
-                <i class="fas fa-plus mr-2"></i>Adicionar Venda
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
 
-      <!-- Sales List -->
-      <div id="vendasList" class="hidden">
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden floating-card"
-        >
-          <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b">
-            <div class="flex items-center">
-              <div
-                class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4"
-              >
-                <i class="fas fa-list text-green-600 text-xl"></i>
-              </div>
-              <h2 class="text-2xl font-bold text-gray-800">Vendas de Hoje</h2>
+        <!-- Sales List -->
+        <div id="vendasList" class="hidden">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden floating-card">
+                <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-list text-green-600 text-xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">Vendas de Hoje</h2>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Produto</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Categoria</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pagamento</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Valor</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Observações</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendasTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Sales will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="gradient-primary p-6 text-white text-center">
+                    <h3 class="text-lg font-semibold mb-2">💰 Total de Vendas do Dia</h3>
+                    <div id="totalVendas" class="text-3xl font-bold">R$ 0,00</div>
+                </div>
             </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead>
-                <tr class="bg-gray-50">
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Item
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Produto
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Categoria
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Pagamento
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Valor
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Observações
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                id="vendasTableBody"
-                class="bg-white divide-y divide-gray-200"
-              >
-                <!-- Sales will be inserted here -->
-              </tbody>
-            </table>
-          </div>
-
-          <div class="gradient-primary p-6 text-white text-center">
-            <h3 class="text-lg font-semibold mb-2">
-              💰 Total de Vendas do Dia
-            </h3>
-            <div id="totalVendas" class="text-3xl font-bold">R$ 0,00</div>
-          </div>
         </div>
-      </div>
     </div>
 
     <!-- Modal -->
-    <div
-      id="modalExclusao"
-      class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 bounce-in"
-      >
-        <div class="text-center">
-          <div
-            class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
-          >
-            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800 mb-2">
-            Confirmar Exclusão
-          </h3>
-          <p class="text-gray-600 mb-6">
-            Tem certeza que deseja excluir esta venda?
-          </p>
-          <div id="vendaDetalhes" class="mb-6"></div>
-          <div class="flex space-x-4">
-            <button
-              onclick="fecharModal()"
-              class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg modern-button"
-            >
-              <i class="fas fa-times mr-2"></i>Cancelar
-            </button>
-            <button
-              id="btnConfirmarExclusao"
-              onclick="confirmarExclusao()"
-              class="flex-1 gradient-danger text-white px-6 py-3 rounded-lg modern-button"
-            >
-              <i class="fas fa-trash mr-2"></i>Excluir
-            </button>
-          </div>
+    <div id="modalExclusao" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 bounce-in">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Confirmar Exclusão</h3>
+                <p class="text-gray-600 mb-6">Tem certeza que deseja excluir esta venda?</p>
+                <div id="vendaDetalhes" class="mb-6"></div>
+                <div class="flex space-x-4">
+                    <button onclick="fecharModal()" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg modern-button">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button id="btnConfirmarExclusao" onclick="confirmarExclusao()" class="flex-1 gradient-danger text-white px-6 py-3 rounded-lg modern-button">
+                        <i class="fas fa-trash mr-2"></i>Excluir
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <script>
-      // Global variables
-      let vendas = [];
-      let caixaAberto = false;
-      let webAppUrl = "";
-      let proximoItem = 1;
-      let vendaParaExcluir = null;
+        // Global variables
+        let vendas = [];
+        let caixaAberto = false;
+        let webAppUrl = "";
+        let proximoItem = 1;
+        let vendaParaExcluir = null;
+        let infoSectionsVisible = true;
 
-      // Initialization
-      document.addEventListener("DOMContentLoaded", function () {
-        atualizarDataAtual();
-        carregarConfiguracao();
-        atualizarStatusConfiguracao();
-        setInterval(atualizarDataAtual, 60000);
-      });
+        // Initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            atualizarDataAtual();
+            carregarConfiguracao();
+            atualizarStatusConfiguracao();
+            setInterval(atualizarDataAtual, 60000);
+        });
 
-      // Configuration functions
-      function mostrarConfiguracao() {
-        document.getElementById("configSection").classList.remove("hidden");
-        document
-          .getElementById("configSection")
-          .scrollIntoView({ behavior: "smooth" });
-      }
-
-      function ocultarConfiguracao() {
-        document.getElementById("configSection").classList.add("hidden");
-      }
-
-      function salvarConfiguracao() {
-        const sheetUrl = document.getElementById("sheetUrl").value;
-        const webAppUrlInput = document.getElementById("webAppUrl").value;
-
-        if (!sheetUrl || !webAppUrlInput) {
-          mostrarAlerta("Por favor, preencha ambos os campos.", "error");
-          return;
+        // Configuration functions
+        function mostrarConfiguracao() {
+            document.getElementById('configSection').classList.remove('hidden');
+            document.getElementById('configSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        localStorage.setItem("sheetUrl", sheetUrl);
-        localStorage.setItem("webAppUrl", webAppUrlInput);
-        webAppUrl = webAppUrlInput;
+        function ocultarConfiguracao() {
+            document.getElementById('configSection').classList.add('hidden');
+        }
 
-        ocultarConfiguracao();
-        atualizarStatusConfiguracao();
-        mostrarAlerta("Configuração salva com sucesso!", "success");
-      }
+        function salvarConfiguracao() {
+            const sheetUrl = document.getElementById('sheetUrl').value;
+            const webAppUrlInput = document.getElementById('webAppUrl').value;
 
-      function carregarConfiguracao() {
-        const sheetUrl = localStorage.getItem("sheetUrl");
-        const savedWebAppUrl = localStorage.getItem("webAppUrl");
-
-        if (sheetUrl && savedWebAppUrl) {
-          document.getElementById("sheetUrl").value = sheetUrl;
-          document.getElementById("webAppUrl").value = savedWebAppUrl;
-          webAppUrl = savedWebAppUrl;
-          atualizarStatusConfiguracao();
-        } else {
-          setTimeout(() => {
-            if (!localStorage.getItem("configShown")) {
-              mostrarConfiguracao();
-              localStorage.setItem("configShown", "true");
-              mostrarAlerta(
-                "Configure as URLs para começar a usar o sistema!",
-                "warning"
-              );
+            if (!sheetUrl || !webAppUrlInput) {
+                mostrarAlerta('Por favor, preencha ambos os campos.', 'error');
+                return;
             }
-          }, 1000);
-        }
-      }
 
-      function atualizarStatusConfiguracao() {
-        const configBtn = document.querySelector(".stats-card button");
-        if (webAppUrl) {
-          configBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Configurado';
-          configBtn.className =
-            "bg-green-500 text-white px-3 py-1 rounded-full text-sm modern-button";
-        } else {
-          configBtn.innerHTML = '<i class="fas fa-wrench mr-1"></i>Configurar';
-          configBtn.className =
-            "bg-orange-500 text-white px-3 py-1 rounded-full text-sm modern-button";
-        }
-      }
+            localStorage.setItem('sheetUrl', sheetUrl);
+            localStorage.setItem('webAppUrl', webAppUrlInput);
+            webAppUrl = webAppUrlInput;
 
-      // Date and status functions
-      function atualizarDataAtual() {
-        const agora = new Date();
-        const dataFormatada = agora.toLocaleDateString("pt-BR", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
+            ocultarConfiguracao();
+            atualizarStatusConfiguracao();
+            mostrarAlerta('Configuração salva com sucesso!', 'success');
+        }
+
+        function carregarConfiguracao() {
+            const sheetUrl = localStorage.getItem('sheetUrl');
+            const savedWebAppUrl = localStorage.getItem('webAppUrl');
+
+            if (sheetUrl && savedWebAppUrl) {
+                document.getElementById('sheetUrl').value = sheetUrl;
+                document.getElementById('webAppUrl').value = savedWebAppUrl;
+                webAppUrl = savedWebAppUrl;
+                atualizarStatusConfiguracao();
+            } else {
+                setTimeout(() => {
+                    if (!localStorage.getItem('configShown')) {
+                        mostrarConfiguracao();
+                        localStorage.setItem('configShown', 'true');
+                        mostrarAlerta('Configure as URLs para começar a usar o sistema!', 'warning');
+                    }
+                }, 1000);
+            }
+        }
+
+        function atualizarStatusConfiguracao() {
+            const configBtn = document.querySelector('.stats-card button');
+            if (webAppUrl) {
+                configBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Configurado';
+                configBtn.className = 'bg-green-500 text-white px-3 py-1 rounded-full text-sm modern-button';
+            } else {
+                configBtn.innerHTML = '<i class="fas fa-wrench mr-1"></i>Configurar';
+                configBtn.className = 'bg-orange-500 text-white px-3 py-1 rounded-full text-sm modern-button';
+            }
+        }
+
+        // Date and status functions
+        function atualizarDataAtual() {
+            const agora = new Date();
+            const dataFormatada = agora.toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('dataAtual').textContent = dataFormatada;
+        }
+
+        function atualizarStatusCaixa() {
+            const statusElement = document.getElementById('statusCaixa');
+            const btnAbrirCaixa = document.getElementById('btnAbrirCaixa');
+
+            if (caixaAberto) {
+                statusElement.textContent = 'Aberto';
+                statusElement.className = 'text-lg font-bold text-green-600';
+                btnAbrirCaixa.innerHTML = '<i class="fas fa-lock mr-2"></i>Fechar Caixa';
+                btnAbrirCaixa.onclick = fecharCaixa;
+                
+                // Esconde as seções de informação quando caixa abre
+                esconderInfoSections();
+                document.getElementById('toggleSection').classList.remove('hidden');
+            } else {
+                statusElement.textContent = 'Fechado';
+                statusElement.className = 'text-lg font-bold text-red-600';
+                btnAbrirCaixa.innerHTML = '<i class="fas fa-unlock mr-2"></i>Abrir Caixa';
+                btnAbrirCaixa.onclick = abrirCaixa;
+                
+                // Mostra as seções de informação quando caixa fecha
+                mostrarInfoSections();
+                document.getElementById('toggleSection').classList.add('hidden');
+            }
+        }
+
+        // Cash register functions
+        async function abrirCaixa() {
+            if (!webAppUrl) {
+                mostrarAlerta('Configure primeiro as URLs do sistema!', 'error');
+                mostrarConfiguracao();
+                return;
+            }
+
+            const btn = document.getElementById('btnAbrirCaixa');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Abrindo Caixa...';
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'abrirCaixa',
+                    data: new Date().toISOString().split('T')[0]
+                });
+
+                const response = await fetch(`${webAppUrl}?${params}`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    caixaAberto = true;
+                    mostrarAlerta('Caixa aberto com sucesso! Nova aba criada no Google Sheets.', 'success');
+                    document.getElementById('formSection').classList.remove('hidden');
+                    document.getElementById('vendasList').classList.remove('hidden');
+                    carregarVendasDoDia();
+                } else {
+                    mostrarAlerta('Erro ao abrir caixa: ' + result.message, 'error');
+                }
+            } catch (error) {
+                mostrarAlerta('Erro de conexão. Verifique sua internet e as configurações.', 'error');
+                console.error('Erro:', error);
+                mostrarConfiguracao();
+            } finally {
+                btn.disabled = false;
+                atualizarStatusCaixa();
+            }
+        }
+
+        function fecharCaixa() {
+            caixaAberto = false;
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('vendasList').classList.add('hidden');
+            mostrarAlerta('Caixa fechado!', 'success');
+            atualizarStatusCaixa();
+        }
+
+        // Sales functions
+        document.getElementById('vendaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const produto = document.getElementById('produto').value;
+            const categoria = document.getElementById('categoria').value;
+            const pagamento = document.getElementById('pagamento').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const observacoes = document.getElementById('observacoes').value;
+
+            if (!produto || !categoria || !pagamento || !valor) {
+                mostrarAlerta('Por favor, preencha todos os campos obrigatórios.', 'error');
+                return;
+            }
+
+            // Desabilita o botão e mostra loading
+            const btnAdicionar = document.getElementById('btnAdicionarVenda');
+            btnAdicionar.disabled = true;
+            btnAdicionar.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Adicionando venda...';
+
+            try {
+                const venda = {
+                    item: proximoItem++,
+                    produto: produto,
+                    categoria: categoria,
+                    pagamento: pagamento,
+                    valor: valor,
+                    observacoes: observacoes,
+                    timestamp: new Date().toISOString()
+                };
+
+                vendas.push(venda);
+                await enviarVendaParaSheets(venda);
+                adicionarVendaATabela(venda);
+                atualizarTotalVendas();
+                limparFormulario();
+                mostrarAlerta('Venda registrada com sucesso!', 'success');
+            } catch (error) {
+                mostrarAlerta('Erro ao registrar venda. Tente novamente.', 'error');
+                console.error('Erro ao adicionar venda:', error);
+                // Remove a venda da lista local se falhou
+                vendas = vendas.filter(v => v.item !== proximoItem - 1);
+                proximoItem--;
+            } finally {
+                // Restaura o botão
+                btnAdicionar.disabled = false;
+                btnAdicionar.innerHTML = '<i class="fas fa-plus mr-2"></i>Adicionar Venda';
+            }
         });
-        document.getElementById("dataAtual").textContent = dataFormatada;
-      }
 
-      function atualizarStatusCaixa() {
-        const statusElement = document.getElementById("statusCaixa");
-        const btnAbrirCaixa = document.getElementById("btnAbrirCaixa");
+        async function enviarVendaParaSheets(venda) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'adicionarVenda',
+                    venda: JSON.stringify(venda)
+                });
 
-        if (caixaAberto) {
-          statusElement.textContent = "Aberto";
-          statusElement.className = "text-lg font-bold text-green-600";
-          btnAbrirCaixa.innerHTML =
-            '<i class="fas fa-lock mr-2"></i>Fechar Caixa';
-          btnAbrirCaixa.onclick = fecharCaixa;
-        } else {
-          statusElement.textContent = "Fechado";
-          statusElement.className = "text-lg font-bold text-red-600";
-          btnAbrirCaixa.innerHTML =
-            '<i class="fas fa-unlock mr-2"></i>Abrir Caixa';
-          btnAbrirCaixa.onclick = abrirCaixa;
-        }
-      }
+                const response = await fetch(`${webAppUrl}?${params}`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
 
-      // Cash register functions
-      async function abrirCaixa() {
-        if (!webAppUrl) {
-          mostrarAlerta("Configure primeiro as URLs do sistema!", "error");
-          mostrarConfiguracao();
-          return;
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Erro ao enviar venda:', error);
+                mostrarAlerta('Venda salva localmente, mas não foi possível sincronizar com o Google Sheets.', 'warning');
+            }
         }
 
-        const btn = document.getElementById("btnAbrirCaixa");
-        btn.disabled = true;
-        btn.innerHTML =
-          '<i class="fas fa-spinner loading-spinner mr-2"></i>Abrindo Caixa...';
+        async function excluirVendaDoSheets(item) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'excluirVenda',
+                    item: item,
+                    data: new Date().toISOString().split('T')[0]
+                });
 
-        try {
-          const params = new URLSearchParams({
-            action: "abrirCaixa",
-            data: new Date().toISOString().split("T")[0],
-          });
+                const response = await fetch(`${webAppUrl}?${params}`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
 
-          const response = await fetch(`${webAppUrl}?${params}`, {
-            method: "GET",
-            mode: "cors",
-          });
-
-          const result = await response.json();
-
-          if (result.success) {
-            caixaAberto = true;
-            mostrarAlerta(
-              "Caixa aberto com sucesso! Nova aba criada no Google Sheets.",
-              "success"
-            );
-            document.getElementById("formSection").classList.remove("hidden");
-            document.getElementById("vendasList").classList.remove("hidden");
-            carregarVendasDoDia();
-          } else {
-            mostrarAlerta("Erro ao abrir caixa: " + result.message, "error");
-          }
-        } catch (error) {
-          mostrarAlerta(
-            "Erro de conexão. Verifique sua internet e as configurações.",
-            "error"
-          );
-          console.error("Erro:", error);
-          mostrarConfiguracao();
-        } finally {
-          btn.disabled = false;
-          atualizarStatusCaixa();
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                return result;
+            } catch (error) {
+                console.error('Erro ao excluir venda:', error);
+                throw error;
+            }
         }
-      }
 
-      function fecharCaixa() {
-        caixaAberto = false;
-        document.getElementById("formSection").classList.add("hidden");
-        document.getElementById("vendasList").classList.add("hidden");
-        mostrarAlerta("Caixa fechado!", "success");
-        atualizarStatusCaixa();
-      }
+        function adicionarVendaATabela(venda) {
+            const tbody = document.getElementById('vendasTableBody');
+            const row = tbody.insertRow();
+            row.id = `venda-${venda.item}`;
+            row.className = 'hover:bg-gray-50 transition-colors';
 
-      // Sales functions
-      document
-        .getElementById("vendaForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const produto = document.getElementById("produto").value;
-          const categoria = document.getElementById("categoria").value;
-          const pagamento = document.getElementById("pagamento").value;
-          const valor = parseFloat(document.getElementById("valor").value);
-          const observacoes = document.getElementById("observacoes").value;
-
-          if (!produto || !categoria || !pagamento || !valor) {
-            mostrarAlerta(
-              "Por favor, preencha todos os campos obrigatórios.",
-              "error"
-            );
-            return;
-          }
-
-          // Desabilita o botão e mostra loading
-          const btnAdicionar = document.getElementById("btnAdicionarVenda");
-          btnAdicionar.disabled = true;
-          btnAdicionar.innerHTML =
-            '<i class="fas fa-spinner loading-spinner mr-2"></i>Adicionando venda...';
-
-          try {
-            const venda = {
-              item: proximoItem++,
-              produto: produto,
-              categoria: categoria,
-              pagamento: pagamento,
-              valor: valor,
-              observacoes: observacoes,
-              timestamp: new Date().toISOString(),
-            };
-
-            vendas.push(venda);
-            await enviarVendaParaSheets(venda);
-            adicionarVendaATabela(venda);
-            atualizarTotalVendas();
-            limparFormulario();
-            mostrarAlerta("Venda registrada com sucesso!", "success");
-          } catch (error) {
-            mostrarAlerta("Erro ao registrar venda. Tente novamente.", "error");
-            console.error("Erro ao adicionar venda:", error);
-            // Remove a venda da lista local se falhou
-            vendas = vendas.filter((v) => v.item !== proximoItem - 1);
-            proximoItem--;
-          } finally {
-            // Restaura o botão
-            btnAdicionar.disabled = false;
-            btnAdicionar.innerHTML =
-              '<i class="fas fa-plus mr-2"></i>Adicionar Venda';
-          }
-        });
-
-      async function enviarVendaParaSheets(venda) {
-        try {
-          const params = new URLSearchParams({
-            action: "adicionarVenda",
-            venda: JSON.stringify(venda),
-          });
-
-          const response = await fetch(`${webAppUrl}?${params}`, {
-            method: "GET",
-            mode: "cors",
-          });
-
-          const result = await response.json();
-          if (!result.success) {
-            throw new Error(result.message);
-          }
-        } catch (error) {
-          console.error("Erro ao enviar venda:", error);
-          mostrarAlerta(
-            "Venda salva localmente, mas não foi possível sincronizar com o Google Sheets.",
-            "warning"
-          );
-        }
-      }
-
-      async function excluirVendaDoSheets(item) {
-        try {
-          const params = new URLSearchParams({
-            action: "excluirVenda",
-            item: item,
-            data: new Date().toISOString().split("T")[0],
-          });
-
-          const response = await fetch(`${webAppUrl}?${params}`, {
-            method: "GET",
-            mode: "cors",
-          });
-
-          const result = await response.json();
-          if (!result.success) {
-            throw new Error(result.message);
-          }
-          return result;
-        } catch (error) {
-          console.error("Erro ao excluir venda:", error);
-          throw error;
-        }
-      }
-
-      function adicionarVendaATabela(venda) {
-        const tbody = document.getElementById("vendasTableBody");
-        const row = tbody.insertRow();
-        row.id = `venda-${venda.item}`;
-        row.className = "hover:bg-gray-50 transition-colors";
-
-        row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${
-                  venda.item
-                }</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
-                  venda.produto
-                }</td>
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${venda.item}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${venda.produto}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="category-badge category-${venda.categoria
-                      .toLowerCase()
-                      .replace("ó", "o")}">
-                        ${venda.categoria === "Acessórios" ? "💍" : "🚀"} ${
-          venda.categoria
-        }
+                    <span class="category-badge category-${venda.categoria.toLowerCase().replace('ó', 'o')}">
+                        ${venda.categoria === 'Acessórios' ? '💍' : '🚀'} ${venda.categoria}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
-                  venda.pagamento
-                }</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">R$ ${venda.valor
-                  .toFixed(2)
-                  .replace(".", ",")}</td>
-                <td class="px-6 py-4 text-sm text-gray-900">${
-                  venda.observacoes
-                }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${venda.pagamento}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">R$ ${venda.valor.toFixed(2).replace('.', ',')}</td>
+                <td class="px-6 py-4 text-sm text-gray-900">${venda.observacoes}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <button onclick="abrirModalExclusao(${
-                      venda.item
-                    })" class="gradient-danger text-white px-3 py-1 rounded-lg modern-button text-xs">
+                    <button onclick="abrirModalExclusao(${venda.item})" class="gradient-danger text-white px-3 py-1 rounded-lg modern-button text-xs">
                         <i class="fas fa-trash mr-1"></i>Excluir
                     </button>
                 </td>
             `;
-      }
-
-      function atualizarTotalVendas() {
-        const total = vendas.reduce((sum, venda) => sum + venda.valor, 0);
-        document.getElementById("totalVendas").textContent = `R$ ${total
-          .toFixed(2)
-          .replace(".", ",")}`;
-        document.getElementById("vendasDia").textContent = vendas.length;
-      }
-
-      function limparFormulario() {
-        document.getElementById("vendaForm").reset();
-      }
-
-      async function carregarVendasDoDia() {
-        try {
-          const params = new URLSearchParams({
-            action: "carregarVendas",
-            data: new Date().toISOString().split("T")[0],
-          });
-
-          const response = await fetch(`${webAppUrl}?${params}`, {
-            method: "GET",
-            mode: "cors",
-          });
-
-          const result = await response.json();
-          if (result.success && result.vendas) {
-            vendas = result.vendas;
-            proximoItem = vendas.length + 1;
-
-            const tbody = document.getElementById("vendasTableBody");
-            tbody.innerHTML = "";
-
-            vendas.forEach((venda) => {
-              adicionarVendaATabela(venda);
-            });
-
-            atualizarTotalVendas();
-          }
-        } catch (error) {
-          console.error("Erro ao carregar vendas:", error);
         }
-      }
 
-      // Interface functions
-      function mostrarAlerta(mensagem, tipo) {
-        const alertContainer = document.getElementById("alertContainer");
-        const alertDiv = document.createElement("div");
-        alertDiv.className = `alert-modern alert-${tipo}`;
+        function atualizarTotalVendas() {
+            const total = vendas.reduce((sum, venda) => sum + venda.valor, 0);
+            document.getElementById('totalVendas').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            document.getElementById('vendasDia').textContent = vendas.length;
+        }
 
-        const icon =
-          tipo === "success"
-            ? "check-circle"
-            : tipo === "error"
-            ? "exclamation-circle"
-            : "exclamation-triangle";
-        alertDiv.innerHTML = `
+        function limparFormulario() {
+            document.getElementById('vendaForm').reset();
+        }
+
+        async function carregarVendasDoDia() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'carregarVendas',
+                    data: new Date().toISOString().split('T')[0]
+                });
+
+                const response = await fetch(`${webAppUrl}?${params}`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                const result = await response.json();
+                if (result.success && result.vendas) {
+                    vendas = result.vendas;
+                    proximoItem = vendas.length + 1;
+
+                    const tbody = document.getElementById('vendasTableBody');
+                    tbody.innerHTML = '';
+
+                    vendas.forEach(venda => {
+                        adicionarVendaATabela(venda);
+                    });
+
+                    atualizarTotalVendas();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar vendas:', error);
+            }
+        }
+
+        // Interface functions
+        function mostrarAlerta(mensagem, tipo) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-modern alert-${tipo}`;
+            
+            const icon = tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'exclamation-triangle';
+            alertDiv.innerHTML = `
                 <div class="flex items-center">
                     <i class="fas fa-${icon} mr-3"></i>
                     <span>${mensagem}</span>
                 </div>
             `;
 
-        alertContainer.appendChild(alertDiv);
+            alertContainer.appendChild(alertDiv);
 
-        setTimeout(() => {
-          alertDiv.remove();
-        }, 5000);
-      }
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
 
-      // Deletion functions
-      function abrirModalExclusao(item) {
-        const venda = vendas.find((v) => v.item === item);
-        if (!venda) return;
+        // Deletion functions
+        function abrirModalExclusao(item) {
+            const venda = vendas.find(v => v.item === item);
+            if (!venda) return;
 
-        vendaParaExcluir = venda;
+            vendaParaExcluir = venda;
 
-        const detalhes = document.getElementById("vendaDetalhes");
-        detalhes.innerHTML = `
+            const detalhes = document.getElementById('vendaDetalhes');
+            detalhes.innerHTML = `
                 <div class="bg-gray-50 rounded-lg p-4 text-left">
                     <div class="grid grid-cols-2 gap-2 text-sm">
                         <div><strong>Item:</strong> ${venda.item}</div>
                         <div><strong>Produto:</strong> ${venda.produto}</div>
-                        <div><strong>Categoria:</strong> ${
-                          venda.categoria
-                        }</div>
-                        <div><strong>Valor:</strong> R$ ${venda.valor
-                          .toFixed(2)
-                          .replace(".", ",")}</div>
-                        <div class="col-span-2"><strong>Pagamento:</strong> ${
-                          venda.pagamento
-                        }</div>
+                        <div><strong>Categoria:</strong> ${venda.categoria}</div>
+                        <div><strong>Valor:</strong> R$ ${venda.valor.toFixed(2).replace('.', ',')}</div>
+                        <div class="col-span-2"><strong>Pagamento:</strong> ${venda.pagamento}</div>
                     </div>
                 </div>
             `;
 
-        document.getElementById("modalExclusao").classList.remove("hidden");
-      }
-
-      function fecharModal() {
-        document.getElementById("modalExclusao").classList.add("hidden");
-        vendaParaExcluir = null;
-      }
-
-      async function confirmarExclusao() {
-        if (!vendaParaExcluir) return;
-
-        const btnExcluir = document.getElementById("btnConfirmarExclusao");
-        btnExcluir.disabled = true;
-        btnExcluir.innerHTML =
-          '<i class="fas fa-spinner loading-spinner mr-2"></i>Excluindo...';
-
-        try {
-          await excluirVendaDoSheets(vendaParaExcluir.item);
-          vendas = vendas.filter((v) => v.item !== vendaParaExcluir.item);
-
-          const row = document.getElementById(`venda-${vendaParaExcluir.item}`);
-          if (row) {
-            row.remove();
-          }
-
-          atualizarTotalVendas();
-          fecharModal();
-          mostrarAlerta("Venda excluída com sucesso!", "success");
-        } catch (error) {
-          mostrarAlerta("Erro ao excluir venda. Tente novamente.", "error");
-          console.error("Erro ao excluir:", error);
-        } finally {
-          btnExcluir.disabled = false;
-          btnExcluir.innerHTML = '<i class="fas fa-trash mr-2"></i>Excluir';
+            document.getElementById('modalExclusao').classList.remove('hidden');
         }
-      }
 
-      // Close modal when clicking outside
-      window.onclick = function (event) {
-        const modal = document.getElementById("modalExclusao");
-        if (event.target === modal) {
-          fecharModal();
+        function fecharModal() {
+            document.getElementById('modalExclusao').classList.add('hidden');
+            vendaParaExcluir = null;
         }
-      };
 
-      // Initialize cash register status
-      atualizarStatusCaixa();
+        async function confirmarExclusao() {
+            if (!vendaParaExcluir) return;
+
+            const btnExcluir = document.getElementById('btnConfirmarExclusao');
+            btnExcluir.disabled = true;
+            btnExcluir.innerHTML = '<i class="fas fa-spinner loading-spinner mr-2"></i>Excluindo...';
+
+            try {
+                await excluirVendaDoSheets(vendaParaExcluir.item);
+                vendas = vendas.filter(v => v.item !== vendaParaExcluir.item);
+                
+                const row = document.getElementById(`venda-${vendaParaExcluir.item}`);
+                if (row) {
+                    row.remove();
+                }
+
+                atualizarTotalVendas();
+                fecharModal();
+                mostrarAlerta('Venda excluída com sucesso!', 'success');
+            } catch (error) {
+                mostrarAlerta('Erro ao excluir venda. Tente novamente.', 'error');
+                console.error('Erro ao excluir:', error);
+            } finally {
+                btnExcluir.disabled = false;
+                btnExcluir.innerHTML = '<i class="fas fa-trash mr-2"></i>Excluir';
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalExclusao');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        };
+
+        // Toggle functions for info sections
+        function toggleInfoSections() {
+            if (infoSectionsVisible) {
+                esconderInfoSections();
+            } else {
+                mostrarInfoSections();
+            }
+        }
+
+        function esconderInfoSections() {
+            const statusDashboard = document.getElementById('statusDashboard');
+            const configSection = document.getElementById('configSection');
+            const btnToggle = document.getElementById('btnToggleInfo');
+            
+            statusDashboard.style.maxHeight = statusDashboard.scrollHeight + 'px';
+            statusDashboard.style.opacity = '1';
+            
+            setTimeout(() => {
+                statusDashboard.style.maxHeight = '0';
+                statusDashboard.style.opacity = '0';
+                statusDashboard.style.marginBottom = '0';
+                statusDashboard.style.overflow = 'hidden';
+            }, 10);
+            
+            // Se configuração estiver aberta, fecha também
+            if (!configSection.classList.contains('hidden')) {
+                configSection.style.maxHeight = '0';
+                configSection.style.opacity = '0';
+                configSection.style.marginBottom = '0';
+                configSection.style.overflow = 'hidden';
+            }
+            
+            btnToggle.innerHTML = '<i class="fas fa-eye mr-2"></i>Mostrar Informações do Sistema';
+            infoSectionsVisible = false;
+        }
+
+        function mostrarInfoSections() {
+            const statusDashboard = document.getElementById('statusDashboard');
+            const btnToggle = document.getElementById('btnToggleInfo');
+            
+            statusDashboard.style.maxHeight = 'none';
+            statusDashboard.style.opacity = '1';
+            statusDashboard.style.marginBottom = '2rem';
+            statusDashboard.style.overflow = 'visible';
+            
+            btnToggle.innerHTML = '<i class="fas fa-eye-slash mr-2"></i>Ocultar Informações do Sistema';
+            infoSectionsVisible = true;
+        }
+
+        // Initialize cash register status
+        atualizarStatusCaixa();
     </script>
-  </body>
+</body>
 </html>
