@@ -22,7 +22,7 @@
       }
 
       :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --primary-gradient: linear-gradient(135deg, #CF9CBF 0%, #CA689A 100%);
         --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
         --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
@@ -199,8 +199,14 @@
         transform: translateY(-2px);
       }
 
-      .modern-button:active {
-        transform: translateY(0);
+      .modern-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      .modern-button:disabled:hover {
+        transform: none !important;
       }
 
       .stats-card {
@@ -558,6 +564,7 @@
 
             <div class="text-center mt-6">
               <button
+                id="btnAdicionarVenda"
                 type="submit"
                 class="gradient-success text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button"
               >
@@ -876,22 +883,41 @@
             return;
           }
 
-          const venda = {
-            item: proximoItem++,
-            produto: produto,
-            categoria: categoria,
-            pagamento: pagamento,
-            valor: valor,
-            observacoes: observacoes,
-            timestamp: new Date().toISOString(),
-          };
+          // Desabilita o botão e mostra loading
+          const btnAdicionar = document.getElementById("btnAdicionarVenda");
+          btnAdicionar.disabled = true;
+          btnAdicionar.innerHTML =
+            '<i class="fas fa-spinner loading-spinner mr-2"></i>Adicionando venda...';
 
-          vendas.push(venda);
-          await enviarVendaParaSheets(venda);
-          adicionarVendaATabela(venda);
-          atualizarTotalVendas();
-          limparFormulario();
-          mostrarAlerta("Venda registrada com sucesso!", "success");
+          try {
+            const venda = {
+              item: proximoItem++,
+              produto: produto,
+              categoria: categoria,
+              pagamento: pagamento,
+              valor: valor,
+              observacoes: observacoes,
+              timestamp: new Date().toISOString(),
+            };
+
+            vendas.push(venda);
+            await enviarVendaParaSheets(venda);
+            adicionarVendaATabela(venda);
+            atualizarTotalVendas();
+            limparFormulario();
+            mostrarAlerta("Venda registrada com sucesso!", "success");
+          } catch (error) {
+            mostrarAlerta("Erro ao registrar venda. Tente novamente.", "error");
+            console.error("Erro ao adicionar venda:", error);
+            // Remove a venda da lista local se falhou
+            vendas = vendas.filter((v) => v.item !== proximoItem - 1);
+            proximoItem--;
+          } finally {
+            // Restaura o botão
+            btnAdicionar.disabled = false;
+            btnAdicionar.innerHTML =
+              '<i class="fas fa-plus mr-2"></i>Adicionar Venda';
+          }
         });
 
       async function enviarVendaParaSheets(venda) {
