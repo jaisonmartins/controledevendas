@@ -836,18 +836,32 @@
           const result = await response.json();
           console.log("Categorias carregadas:", result);
 
-          if (result.success && result.categorias) {
+          if (
+            result.success &&
+            Array.isArray(result.categorias) &&
+            result.categorias.length > 0
+          ) {
             categorias = result.categorias;
             atualizarSelectCategorias();
+            habilitarFormularioVenda(true);
           } else {
-            categorias = ["Acessórios", "Brinquedos"];
+            categorias = [];
             atualizarSelectCategorias();
-            console.warn("Usando categorias padrão");
+            mostrarAlerta(
+              "Nenhuma categoria cadastrada. Cadastre categorias na planilha para registrar vendas.",
+              "warning"
+            );
+            habilitarFormularioVenda(false);
           }
         } catch (error) {
           console.error("Erro ao carregar categorias:", error);
-          categorias = ["Acessórios", "Brinquedos"];
+          categorias = [];
           atualizarSelectCategorias();
+          mostrarAlerta(
+            "Erro ao carregar categorias. Verifique a conexão e a planilha.",
+            "error"
+          );
+          habilitarFormularioVenda(false);
         }
       }
 
@@ -861,23 +875,23 @@
         categorias.forEach((categoria) => {
           const option = document.createElement("option");
           option.value = categoria;
-
-          let icone = "🏷️";
-          if (
-            categoria.toLowerCase().includes("acessórios") ||
-            categoria.toLowerCase().includes("acessorio")
-          ) {
-            icone = "💍";
-          } else if (
-            categoria.toLowerCase().includes("brinquedo") ||
-            categoria.toLowerCase().includes("brinquedos")
-          ) {
-            icone = "🚀";
-          }
-
-          option.textContent = `${icone} ${categoria}`;
+          option.textContent = categoria; // Removido ícone
           selectCategoria.appendChild(option);
         });
+      }
+
+      function habilitarFormularioVenda(habilitar) {
+        const formSection = document.getElementById("formSection");
+        const btnAdicionar = document.getElementById("btnAdicionarVenda");
+        if (habilitar) {
+          formSection.classList.remove("opacity-50");
+          btnAdicionar.disabled = false;
+          document.getElementById("categoria").disabled = false;
+        } else {
+          formSection.classList.add("opacity-50");
+          btnAdicionar.disabled = true;
+          document.getElementById("categoria").disabled = true;
+        }
       }
 
       function fecharCaixa() {
@@ -1036,19 +1050,7 @@
         row.id = `venda-${venda.item}`;
         row.className = "hover:bg-gray-50 transition-colors";
 
-        let iconeCategoria = "🏷️";
-        if (
-          venda.categoria.toLowerCase().includes("acessórios") ||
-          venda.categoria.toLowerCase().includes("acessorio")
-        ) {
-          iconeCategoria = "💍";
-        } else if (
-          venda.categoria.toLowerCase().includes("brinquedo") ||
-          venda.categoria.toLowerCase().includes("brinquedos")
-        ) {
-          iconeCategoria = "🚀";
-        }
-
+        // Removido ícone da categoria
         row.innerHTML = `
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${
             venda.item
@@ -1062,7 +1064,7 @@
               .replace(/[óô]/g, "o")
               .replace(/[ç]/g, "c")
               .replace(/\s+/g, "")}">
-              ${iconeCategoria} ${venda.categoria}
+              ${venda.categoria}
             </span>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
@@ -1075,9 +1077,7 @@
             venda.observacoes || "-"
           }</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm">
-            <button onclick="abrirModalExclusao(${
-              venda.item
-            })" class="gradient-danger text-white px-3 py-1 rounded-lg modern-button text-xs">
+            <button onclick="abrirModalExclusao(${venda.item})" class="gradient-danger text-white px-3 py-1 rounded-lg modern-button text-xs">
               <i class="fas fa-trash mr-1"></i>Excluir
             </button>
           </td>
