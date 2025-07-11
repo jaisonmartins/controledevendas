@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Vendas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { font-family: "Inter", sans-serif; }
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
+        --dark-gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+      }
+      .gradient-primary { background: var(--primary-gradient); }
+      .floating-card { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+      .floating-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+      .category-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: linear-gradient(135deg, #2d8cf8 0%, #004f70 100%); color: #fff; }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    <div class="relative z-10 max-w-7xl mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="text-center mb-10">
+        <div class="gradient-primary rounded-2xl p-8 text-white shadow-2xl floating-card">
+          <div class="flex flex-col items-center justify-center mb-2 md:flex-row md:mb-4">
+            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-2 md:mb-0 md:mr-4">
+              <i class="fas fa-chart-bar text-3xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl md:text-4xl font-bold mb-2">Dashboard de Vendas</h1>
+              <p class="text-base md:text-xl opacity-90">Acompanhe o desempenho das vendas por período, categoria e pagamento</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Filtro por data -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 floating-card">
+        <form id="filtroForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Data Inicial</label>
+            <input type="date" id="dataInicio" class="w-full px-4 py-3 rounded-lg modern-input" required />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Data Final</label>
+            <input type="date" id="dataFim" class="w-full px-4 py-3 rounded-lg modern-input" required />
+          </div>
+          <div>
+            <button type="submit" class="gradient-primary text-white px-6 py-3 rounded-lg modern-button w-full font-semibold">
+              <i class="fas fa-search mr-2"></i>Buscar
+            </button>
+          </div>
+        </form>
+      </div>
+      <!-- Cards de resumo -->
+      <div id="resumoCards" class="grid md:grid-cols-3 gap-6 mb-8"></div>
+      <!-- Gráficos e tabelas -->
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 floating-card">
+          <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-calendar-day mr-2 text-blue-500"></i>Vendas por Dia</h2>
+          <div id="graficoVendasDia" class="min-h-[200px]"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-lg p-6 floating-card">
+          <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-tags mr-2 text-purple-500"></i>Vendas por Categoria</h2>
+          <div id="graficoCategorias" class="min-h-[200px]"></div>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8 mt-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 floating-card">
+          <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-credit-card mr-2 text-green-500"></i>Vendas por Tipo de Pagamento</h2>
+          <div id="graficoPagamentos" class="min-h-[200px]"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-lg p-6 floating-card">
+          <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-box mr-2 text-yellow-500"></i>Produtos Mais Vendidos</h2>
+          <div id="tabelaProdutos" class="min-h-[200px]"></div>
+        </div>
+      </div>
+      <!-- Nova tabela: Produtos Mais Vendidos por Dia -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 floating-card mt-8">
+        <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-calendar-day mr-2 text-blue-500"></i>Produtos Mais Vendidos por Dia</h2>
+        <div id="tabelaProdutosPorDia" class="min-h-[200px]"></div>
+      </div>
+    </div>
+    <script type="module">
+      import { WEBAPP_URL } from "./conexao.js";
+      // Função para mostrar mensagens de erro no dashboard
+      function mostrarErroDashboard(msg) {
+        let erroDiv = document.getElementById("msgErroDashboard");
+        if (!erroDiv) {
+          erroDiv = document.createElement("div");
+          erroDiv.id = "msgErroDashboard";
+          erroDiv.className = "alert-modern alert-error mb-6";
+          document.body.prepend(erroDiv);
+        }
+        erroDiv.innerHTML = `<div class='flex items-center'><i class='fas fa-exclamation-circle mr-3'></i><span><strong>Erro:</strong> ${msg}</span></div>`;
+        setTimeout(() => { erroDiv.remove(); }, 10000);
+      }
+
+      // Função para mostrar mensagens de sucesso centralizadas
+      function mostrarSucessoDashboard(msg) {
+        let msgDiv = document.getElementById("msgSucessoConexao");
+        if (!msgDiv) {
+          msgDiv = document.createElement("div");
+          msgDiv.id = "msgSucessoConexao";
+          msgDiv.className = "alert-modern alert-success mb-6 text-center mx-auto max-w-xl";
+          // Posiciona logo abaixo do header
+          const header = document.querySelector(".text-center.mb-10");
+          if (header && header.parentNode) {
+            header.parentNode.insertBefore(msgDiv, header.nextSibling);
+          } else {
+            document.body.prepend(msgDiv);
+          }
+        }
+        msgDiv.innerHTML = `<div class='flex items-center justify-center'><i class='fas fa-check-circle mr-3'></i><span><strong>${msg}</strong></span></div>`;
+        setTimeout(() => { msgDiv.remove(); }, 8000);
+      }
+
+      // Função para buscar estatísticas no backend
+      async function buscarEstatisticas(dataInicio, dataFim) {
+        const webAppUrl = WEBAPP_URL;
+        if (!webAppUrl) {
+          mostrarErroDashboard("URL do backend não configurada!");
+          return null;
+        }
+        const params = new URLSearchParams({
+          action: "obterEstatisticas",
+          dataInicio,
+          dataFim,
+        });
+        try {
+          const response = await fetch(`${webAppUrl}?${params}`, { method: "GET", mode: "cors" });
+          if (!response.ok) throw new Error("Erro ao buscar estatísticas: " + response.status);
+          return await response.json();
+        } catch (error) {
+          mostrarErroDashboard("Erro ao buscar estatísticas: " + error.message);
+          return null;
+        }
+      }
+      // Renderização dos cards de resumo
+      function renderResumo(estatisticas) {
+        const cards = [
+          {
+            icon: "fa-shopping-cart",
+            label: "Total de Vendas",
+            value: estatisticas.totalVendas,
+            color: "gradient-success",
+          },
+          {
+            icon: "fa-money-bill-wave",
+            label: "Valor Total",
+            value: `R$ ${estatisticas.valorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`,
+            color: "gradient-primary",
+          },
+          {
+            icon: "fa-ticket-alt",
+            label: "Ticket Médio",
+            value: `R$ ${estatisticas.ticketMedio.toLocaleString('pt-BR', {minimumFractionDigits:2})}`,
+            color: "gradient-warning",
+          },
+        ];
+        document.getElementById("resumoCards").innerHTML = cards.map(card => `
+          <div class="stats-card text-center ${card.color} rounded-2xl p-6 shadow-2xl floating-card flex flex-col items-center justify-center">
+            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas ${card.icon} text-2xl"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-600 mb-1">${card.label}</h3>
+            <div class="text-lg font-bold text-gray-800">${card.value}</div>
+          </div>
+        `).join("");
+      }
+      // Renderização dos gráficos/tabelas
+      function renderGraficoVendasDia(vendasPorDia) {
+        const container = document.getElementById("graficoVendasDia");
+        if (!vendasPorDia || Object.keys(vendasPorDia).length === 0) {
+          container.innerHTML = '<div class="text-gray-500">Nenhum dado encontrado.</div>';
+          return;
+        }
+        container.innerHTML = `<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Data</th><th class="text-left py-2">Vendas</th></tr></thead><tbody>${Object.entries(vendasPorDia).map(([data, qtd]) => `<tr><td>${new Date(data).toLocaleDateString('pt-BR')}</td><td class='font-bold text-blue-600'>${qtd}</td></tr>`).join("")}</tbody></table>`;
+      }
+      function renderGraficoCategorias(categorias) {
+        const container = document.getElementById("graficoCategorias");
+        if (!categorias || Object.keys(categorias).length === 0) {
+          container.innerHTML = '<div class="text-gray-500">Nenhum dado encontrado.</div>';
+          return;
+        }
+        container.innerHTML = `<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Categoria</th><th class="text-left py-2">Valor</th></tr></thead><tbody>${Object.entries(categorias).map(([cat, val]) => `<tr><td><span class="category-badge">${cat}</span></td><td>R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td></tr>`).join("")}</tbody></table>`;
+      }
+      function renderGraficoPagamentos(pagamentos) {
+        const container = document.getElementById("graficoPagamentos");
+        if (!pagamentos || Object.keys(pagamentos).length === 0) {
+          container.innerHTML = '<div class="text-gray-500">Nenhum dado encontrado.</div>';
+          return;
+        }
+        container.innerHTML = `<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Tipo</th><th class="text-left py-2">Valor</th></tr></thead><tbody>${Object.entries(pagamentos).map(([tipo, val]) => `<tr><td>${tipo}</td><td>R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td></tr>`).join("")}</tbody></table>`;
+      }
+      function renderTabelaProdutos(produtos) {
+        const container = document.getElementById("tabelaProdutos");
+        if (!produtos || produtos.length === 0) {
+          container.innerHTML = '<div class="text-gray-500">Nenhum dado encontrado.</div>';
+          return;
+        }
+        container.innerHTML = `<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Produto</th><th class="text-left py-2">Quantidade</th></tr></thead><tbody>${produtos.map(prod => `<tr><td>${prod.produto}</td><td class='font-bold text-green-600'>${prod.quantidade}</td></tr>`).join("")}</tbody></table>`;
+      }
+      // Renderização dos produtos mais vendidos por dia
+      function renderTabelaProdutosPorDia(produtosPorDia) {
+        const container = document.getElementById("tabelaProdutosPorDia");
+        if (!produtosPorDia || Object.keys(produtosPorDia).length === 0) {
+          container.innerHTML = '<div class="text-gray-500">Nenhum dado encontrado.</div>';
+          return;
+        }
+        container.innerHTML = Object.entries(produtosPorDia).map(([data, produtos]) => `
+          <div class="mb-6">
+            <h3 class="font-bold text-blue-700 mb-2">${new Date(data).toLocaleDateString('pt-BR')}</h3>
+            <table class="w-full text-sm mb-2">
+              <thead><tr><th class="text-left py-2">Produto</th><th class="text-left py-2">Quantidade</th></tr></thead>
+              <tbody>
+                ${produtos.map(prod => `<tr><td>${prod.produto}</td><td class='font-bold text-green-600'>${prod.quantidade}</td></tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        `).join("");
+      }
+      // Evento do filtro
+      document.getElementById("filtroForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const dataInicio = document.getElementById("dataInicio").value;
+        const dataFim = document.getElementById("dataFim").value;
+        if (!dataInicio || !dataFim) {
+          mostrarErroDashboard("Preencha as datas inicial e final.");
+          return;
+        }
+        const result = await buscarEstatisticas(dataInicio, dataFim);
+        if (!result) return;
+        if (!result.success) {
+          mostrarErroDashboard(result.message || "Nenhum dado retornado do backend.");
+          return;
+        }
+        // Mensagem de sucesso centralizada
+        mostrarSucessoDashboard("Sistema inicializado com sucesso! Conexão estabelecida com o Google Sheets.");
+        const est = result.estatisticas;
+        renderResumo(est);
+        renderGraficoVendasDia(est.vendasPorDia || {});
+        renderGraficoCategorias(est.categorias || {});
+        renderGraficoPagamentos(est.formasPagamento || {});
+        renderTabelaProdutos(est.produtosMaisVendidos || []);
+        renderTabelaProdutosPorDia(est.produtosPorDia || {});
+      });
+    </script>
+  </body>
+</html>
