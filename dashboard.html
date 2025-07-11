@@ -205,24 +205,77 @@
         }
         container.innerHTML = `<table class="w-full text-sm"><thead><tr><th class="text-left py-2">Produto</th><th class="text-left py-2">Quantidade</th></tr></thead><tbody>${produtos.map(prod => `<tr><td>${prod.produto}</td><td class='font-bold text-green-600'>${prod.quantidade}</td></tr>`).join("")}</tbody></table>`;
       }
-      // Renderização dos produtos mais vendidos por dia
+      // Controle de navegação dos dias
+      let diasProdutos = [];
+      let diaAtualIndex = 0;
       function renderTabelaProdutosPorDia(produtosPorDia) {
         const container = document.getElementById("tabelaProdutosPorDia");
-        if (!produtosPorDia || Object.keys(produtosPorDia).length === 0) {
+        diasProdutos = Object.keys(produtosPorDia).sort((a, b) => new Date(a) - new Date(b));
+        if (diasProdutos.length === 0) {
           container.innerHTML = '<div class="text-gray-500">Nenhum dado encontrado.</div>';
           return;
         }
-        container.innerHTML = Object.entries(produtosPorDia).map(([data, produtos]) => `
-          <div class="mb-6">
-            <h3 class="font-bold text-blue-700 mb-2">${new Date(data).toLocaleDateString('pt-BR')}</h3>
-            <table class="w-full text-sm mb-2">
-              <thead><tr><th class="text-left py-2">Produto</th><th class="text-left py-2">Quantidade</th></tr></thead>
-              <tbody>
-                ${produtos.map(prod => `<tr><td>${prod.produto}</td><td class='font-bold text-green-600'>${prod.quantidade}</td></tr>`).join("")}
-              </tbody>
-            </table>
+        // Mostra o último dia por padrão
+        if (diaAtualIndex < 0 || diaAtualIndex >= diasProdutos.length) {
+          diaAtualIndex = diasProdutos.length - 1;
+        }
+        const data = diasProdutos[diaAtualIndex];
+        const produtos = produtosPorDia[data] || [];
+        container.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <button id="btnDiaAnterior" class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-lg" ${diaAtualIndex === 0 ? "disabled" : ""}>&#x2B9C;</button>
+            <h3 class="font-bold text-blue-700 mx-4">${new Date(data).toLocaleDateString('pt-BR')}</h3>
+            <button id="btnDiaProximo" class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-lg" ${diaAtualIndex === diasProdutos.length - 1 ? "disabled" : ""}>&#x2B9E;</button>
           </div>
-        `).join("");
+          <table class="w-full text-sm mb-2">
+            <thead><tr><th class="text-left py-2">Produto</th><th class="text-left py-2">Quantidade</th></tr></thead>
+            <tbody>
+              ${produtos.map(prod => `<tr><td>${prod.produto}</td><td class='font-bold text-green-600'>${prod.quantidade}</td></tr>`).join("")}
+            </tbody>
+          </table>
+        `;
+        // Eventos das setas
+        document.getElementById("btnDiaAnterior").onclick = function() {
+          if (diaAtualIndex > 0) {
+            diaAtualIndex--;
+            renderTabelaProdutosPorDia(produtosPorDia);
+          }
+        };
+        document.getElementById("btnDiaProximo").onclick = function() {
+          if (diaAtualIndex < diasProdutos.length - 1) {
+            diaAtualIndex++;
+            renderTabelaProdutosPorDia(produtosPorDia);
+          }
+        };
+      }
+      // Função para buscar o dia atual e inicializar o dashboard
+      async function inicializarDashboardComDiaAtual() {
+        const hoje = new Date();
+        const yyyy = hoje.getFullYear();
+        const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoje.getDate()).padStart(2, '0');
+        const dataHoje = `${yyyy}-${mm}-${dd}`;
+        document.getElementById("dataInicio").value = dataHoje;
+        document.getElementById("dataFim").value = dataHoje;
+        const resultDia = await buscarEstatisticas(dataHoje, dataHoje);
+        if (!resultDia || !resultDia.success) return;
+        mostrarSucessoDashboard("Sistema inicializado com sucesso! Conexão estabelecida com o Google Sheets.");
+        const est = resultDia.estatisticas;
+        renderResumo(est);
+        renderGraficoVendasDia(est.vendasPorDia || {});
+        renderGraficoCategorias(est.categorias || {});
+        renderGraficoPagamentos(est.formasPagamento || {});
+        renderTabelaProdutos(est.produtosMaisVendidos || []);
+        // Inicializa navegação de Produtos Mais Vendidos por Dia no dia atual
+        if (est.produtosPorDia && Object.keys(est.produtosPorDia).length > 0) {
+          const dias = Object.keys(est.produtosPorDia).sort((a, b) => new Date(a) - new Date(b));
+          let indexHoje = dias.findIndex(d => d === dataHoje);
+          if (indexHoje === -1) indexHoje = dias.length - 1; // Se não houver vendas hoje, mostra o último dia
+          diaAtualIndex = indexHoje;
+          renderTabelaProdutosPorDia(est.produtosPorDia);
+        } else {
+          renderTabelaProdutosPorDia({});
+        }
       }
       // Evento do filtro
       document.getElementById("filtroForm").addEventListener("submit", async function(e) {
@@ -249,6 +302,8 @@
         renderTabelaProdutos(est.produtosMaisVendidos || []);
         renderTabelaProdutosPorDia(est.produtosPorDia || {});
       });
+      // Inicializa dashboard automaticamente ao carregar
+      window.addEventListener('DOMContentLoaded', inicializarDashboardComDiaAtual);
     </script>
   </body>
 </html>
