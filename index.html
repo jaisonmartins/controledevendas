@@ -1,560 +1,1339 @@
-// Google Apps Script para integração com o sistema de vendas
-// Cole este código no Google Apps Script (script.google.com)
-
-function doGet(e) {
-  try {
-    const action = e.parameter.action;
-
-    switch (action) {
-      case "abrirCaixa":
-        return ContentService.createTextOutput(
-          JSON.stringify(abrirCaixa())
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "adicionarVenda":
-        const venda = JSON.parse(e.parameter.venda);
-        return ContentService.createTextOutput(
-          JSON.stringify(adicionarVenda(venda))
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "carregarVendas":
-        return ContentService.createTextOutput(
-          JSON.stringify(carregarVendas(e.parameter.data))
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "carregarCategorias":
-        return ContentService.createTextOutput(
-          JSON.stringify(carregarCategorias())
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "excluirVenda":
-        return ContentService.createTextOutput(
-          JSON.stringify(excluirVenda(e.parameter.item))
-        ).setMimeType(ContentService.MimeType.JSON);
-      default:
-        return ContentService.createTextOutput(
-          JSON.stringify({
-            success: false,
-            message: "Ação não reconhecida",
-          })
-        ).setMimeType(ContentService.MimeType.JSON);
-    }
-  } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        success: false,
-        message: "Erro no servidor: " + error.message,
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-
-    switch (data.action) {
-      case "abrirCaixa":
-        return ContentService.createTextOutput(
-          JSON.stringify(abrirCaixa())
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "adicionarVenda":
-        return ContentService.createTextOutput(
-          JSON.stringify(adicionarVenda(data.venda))
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "carregarVendas":
-        return ContentService.createTextOutput(
-          JSON.stringify(carregarVendas(data.data))
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "carregarCategorias":
-        return ContentService.createTextOutput(
-          JSON.stringify(carregarCategorias())
-        ).setMimeType(ContentService.MimeType.JSON);
-      case "excluirVenda":
-        return ContentService.createTextOutput(
-          JSON.stringify(excluirVenda(data.item))
-        ).setMimeType(ContentService.MimeType.JSON);
-      default:
-        return ContentService.createTextOutput(
-          JSON.stringify({
-            success: false,
-            message: "Ação não reconhecida",
-          })
-        ).setMimeType(ContentService.MimeType.JSON);
-    }
-  } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        success: false,
-        message: "Erro no servidor: " + error.message,
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function abrirCaixa() {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-
-    // Verifica se a aba "movimento" já existe
-    let sheetMovimento = spreadsheet.getSheetByName("movimento");
-
-    if (!sheetMovimento) {
-      // Cria nova aba "movimento"
-      sheetMovimento = spreadsheet.insertSheet("movimento");
-
-      // Configura o cabeçalho
-      const cabecalho = [
-        "Item",
-        "Produto",
-        "Categoria",
-        "Pagamento",
-        "Valor",
-        "Observações",
-        "Data",
-      ];
-      sheetMovimento.getRange(1, 1, 1, cabecalho.length).setValues([cabecalho]);
-
-      // Formata o cabeçalho
-      const headerRange = sheetMovimento.getRange(1, 1, 1, cabecalho.length);
-      headerRange.setBackground("#4CAF50");
-      headerRange.setFontColor("white");
-      headerRange.setFontWeight("bold");
-      headerRange.setHorizontalAlignment("center");
-
-      // Ajusta largura das colunas
-      sheetMovimento.setColumnWidth(1, 60); // Item
-      sheetMovimento.setColumnWidth(2, 200); // Produto
-      sheetMovimento.setColumnWidth(3, 120); // Categoria
-      sheetMovimento.setColumnWidth(4, 150); // Pagamento
-      sheetMovimento.setColumnWidth(5, 100); // Valor
-      sheetMovimento.setColumnWidth(6, 250); // Observações
-      sheetMovimento.setColumnWidth(7, 100); // Data
-
-      // Adiciona formatação de moeda na coluna Valor
-      sheetMovimento.getRange(2, 5, 1000, 1).setNumberFormat("R$ #,##0.00");
-
-      // Adiciona formatação de data na coluna Data
-      sheetMovimento.getRange(2, 7, 1000, 1).setNumberFormat("dd/mm/yyyy");
-    }
-
-    // Verifica se a aba "categorias" existe, se não, cria com categorias padrão
-    let sheetCategorias = spreadsheet.getSheetByName("categorias");
-
-    if (!sheetCategorias) {
-      sheetCategorias = spreadsheet.insertSheet("categorias");
-
-      // Configura o cabeçalho da aba categorias
-      const cabecalhoCategorias = ["Categoria"];
-      sheetCategorias
-        .getRange(1, 1, 1, cabecalhoCategorias.length)
-        .setValues([cabecalhoCategorias]);
-
-      // Formata o cabeçalho
-      const headerRangeCategorias = sheetCategorias.getRange(
-        1,
-        1,
-        1,
-        cabecalhoCategorias.length
-      );
-      headerRangeCategorias.setBackground("#FF9800");
-      headerRangeCategorias.setFontColor("white");
-      headerRangeCategorias.setFontWeight("bold");
-      headerRangeCategorias.setHorizontalAlignment("center");
-
-      // Adiciona categorias padrão
-      const categoriasDefault = [["Acessórios"], ["Brinquedos"]];
-
-      sheetCategorias
-        .getRange(2, 1, categoriasDefault.length, 1)
-        .setValues(categoriasDefault);
-
-      // Ajusta largura da coluna
-      sheetCategorias.setColumnWidth(1, 150);
-    }
-
-    return {
-      success: true,
-      message: "Sistema inicializado com sucesso",
-      nomeAba: "movimento",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Erro ao inicializar sistema: " + error.message,
-    };
-  }
-}
-
-function adicionarVenda(venda) {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    let sheetMovimento = spreadsheet.getSheetByName("movimento");
-
-    if (!sheetMovimento) {
-      // Se a aba não existir, inicializa o sistema primeiro
-      const resultadoAbrirCaixa = abrirCaixa();
-      if (!resultadoAbrirCaixa.success) {
-        return resultadoAbrirCaixa;
-      }
-      sheetMovimento = spreadsheet.getSheetByName("movimento");
-    }
-
-    // Encontra a próxima linha vazia
-    const proximaLinha = sheetMovimento.getLastRow() + 1;
-
-    // Formata a data para DD/MM/AAAA
-    const dataVenda = new Date(venda.timestamp);
-    const dataFormatada = Utilities.formatDate(
-      dataVenda,
-      Session.getScriptTimeZone(),
-      "dd/MM/yyyy"
-    );
-
-    // Dados da venda
-    const dadosVenda = [
-      venda.item,
-      venda.produto,
-      venda.categoria,
-      venda.pagamento,
-      venda.valor,
-      venda.observacoes || "",
-      dataFormatada,
-    ];
-
-    // Insere os dados
-    sheetMovimento
-      .getRange(proximaLinha, 1, 1, dadosVenda.length)
-      .setValues([dadosVenda]);
-
-    // Aplica formatação alternada nas linhas
-    if (proximaLinha % 2 === 0) {
-      sheetMovimento
-        .getRange(proximaLinha, 1, 1, dadosVenda.length)
-        .setBackground("#f8f9fa");
-    }
-
-    // Adiciona formatação especial para categoria
-    const categoriaCell = sheetMovimento.getRange(proximaLinha, 3);
-    if (venda.categoria === "Acessórios") {
-      categoriaCell.setBackground("#e1f5fe");
-      categoriaCell.setFontColor("#01579b");
-    } else if (
-      venda.categoria === "Brinquedos" ||
-      venda.categoria === "Brinquedo"
-    ) {
-      categoriaCell.setBackground("#fff3e0");
-      categoriaCell.setFontColor("#e65100");
-    }
-
-    return {
-      success: true,
-      message: "Venda adicionada com sucesso",
-      linha: proximaLinha,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Erro ao adicionar venda: " + error.message,
-    };
-  }
-}
-
-function carregarVendas(data) {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetMovimento = spreadsheet.getSheetByName("movimento");
-
-    if (!sheetMovimento) {
-      return {
-        success: true,
-        vendas: [],
-        message: "Aba movimento não encontrada",
-      };
-    }
-
-    const ultimaLinha = sheetMovimento.getLastRow();
-
-    if (ultimaLinha <= 1) {
-      return {
-        success: true,
-        vendas: [],
-        message: "Nenhuma venda encontrada",
-      };
-    }
-
-    // Carrega todos os dados (exceto o cabeçalho)
-    const dadosRange = sheetMovimento.getRange(2, 1, ultimaLinha - 1, 7);
-    const dados = dadosRange.getValues();
-
-    // Formata a data de filtro para comparação
-    const dataFiltro = new Date(data + "T00:00:00");
-    const dataFiltroFormatada = Utilities.formatDate(
-      dataFiltro,
-      Session.getScriptTimeZone(),
-      "dd/MM/yyyy"
-    );
-
-    // Filtra vendas pela data
-    const vendasFiltradas = dados.filter((linha) => {
-      const dataVenda = linha[6]; // Coluna Data
-
-      // Se a data da venda é um objeto Date, formata para comparar
-      if (dataVenda instanceof Date) {
-        const dataVendaFormatada = Utilities.formatDate(
-          dataVenda,
-          Session.getScriptTimeZone(),
-          "dd/MM/yyyy"
-        );
-        return dataVendaFormatada === dataFiltroFormatada;
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Controle de Vendas</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        font-family: "Inter", sans-serif;
       }
 
-      // Se a data da venda já é string, compara diretamente
-      return dataVenda === dataFiltroFormatada;
-    });
-
-    // Ordena do mais recente para o mais antigo (item decrescente)
-    vendasFiltradas.sort(function (a, b) {
-      return (parseInt(b[0], 10) || 0) - (parseInt(a[0], 10) || 0);
-    });
-
-    const vendas = vendasFiltradas.map((linha) => ({
-      item: linha[0],
-      produto: linha[1],
-      categoria: linha[2],
-      pagamento: linha[3],
-      valor: linha[4],
-      observacoes: linha[5],
-      data: linha[6],
-    }));
-
-    return {
-      success: true,
-      vendas: vendas,
-      message: `${vendas.length} vendas encontradas para ${dataFiltroFormatada}`,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Erro ao carregar vendas: " + error.message,
-    };
-  }
-}
-
-function carregarCategorias() {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    let sheetCategorias = spreadsheet.getSheetByName("categorias");
-
-    if (!sheetCategorias) {
-      return {
-        success: false,
-        categorias: [],
-        message:
-          "Aba de categorias não encontrada. Crie a aba 'categorias' na planilha.",
-      };
-    }
-
-    const ultimaLinha = sheetCategorias.getLastRow();
-
-    if (ultimaLinha <= 1) {
-      return {
-        success: false,
-        categorias: [],
-        message:
-          "Nenhuma categoria encontrada. Adicione categorias na aba 'categorias'.",
-      };
-    }
-
-    // Carrega as categorias (exceto o cabeçalho)
-    const dadosRange = sheetCategorias.getRange(2, 1, ultimaLinha - 1, 1);
-    const dados = dadosRange.getValues();
-
-    const categorias = dados
-      .map((linha) => linha[0])
-      .filter((categoria) => categoria && categoria.trim() !== "");
-
-    return {
-      success: true,
-      categorias: categorias,
-      message: "Categorias carregadas com sucesso",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Erro ao carregar categorias: " + error.message,
-    };
-  }
-}
-
-function excluirVenda(item) {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetMovimento = spreadsheet.getSheetByName("movimento");
-
-    if (!sheetMovimento) {
-      return {
-        success: false,
-        message: "Aba movimento não encontrada",
-      };
-    }
-
-    const ultimaLinha = sheetMovimento.getLastRow();
-
-    if (ultimaLinha <= 1) {
-      return {
-        success: false,
-        message: "Nenhuma venda encontrada para excluir",
-      };
-    }
-
-    // Busca a linha com o item especificado
-    const range = sheetMovimento.getRange(2, 1, ultimaLinha - 1, 1); // Coluna A (Item)
-    const valores = range.getValues();
-
-    let linhaParaExcluir = -1;
-    for (let i = 0; i < valores.length; i++) {
-      if (valores[i][0] == item) {
-        linhaParaExcluir = i + 2; // +2 porque começamos na linha 2
-        break;
-      }
-    }
-
-    if (linhaParaExcluir === -1) {
-      return {
-        success: false,
-        message: "Item não encontrado",
-      };
-    }
-
-    // Backup da linha antes de excluir (para log)
-    const linhaBackup = sheetMovimento
-      .getRange(linhaParaExcluir, 1, 1, 7)
-      .getValues()[0];
-
-    // Exclui a linha
-    sheetMovimento.deleteRow(linhaParaExcluir);
-
-    // Log da exclusão
-    Logger.log(
-      `Venda excluída - Item: ${item}, Produto: ${linhaBackup[1]}, Categoria: ${linhaBackup[2]}, Valor: ${linhaBackup[4]}`
-    );
-
-    return {
-      success: true,
-      message: "Venda excluída com sucesso",
-      item: item,
-      produtoExcluido: linhaBackup[1],
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Erro ao excluir venda: " + error.message,
-    };
-  }
-}
-
-// Função para testar a integração
-function testarIntegracao() {
-  Logger.log("Testando integração...");
-
-  // Testa abrir caixa (inicializar sistema)
-  const resultadoAbrirCaixa = abrirCaixa();
-  Logger.log("Resultado inicializar sistema:", resultadoAbrirCaixa);
-
-  // Testa carregar categorias
-  const resultadoCategorias = carregarCategorias();
-  Logger.log("Resultado carregar categorias:", resultadoCategorias);
-
-  // Testa adicionar venda
-  const vendaTeste = {
-    item: 1,
-    produto: "Produto Teste",
-    categoria: "Acessórios",
-    pagamento: "Dinheiro",
-    valor: 10.5,
-    observacoes: "Teste de integração",
-    timestamp: new Date().toISOString(),
-  };
-
-  const resultadoVenda = adicionarVenda(vendaTeste);
-  Logger.log("Resultado adicionar venda:", resultadoVenda);
-
-  // Testa carregar vendas
-  const hoje = new Date().toISOString().split("T")[0];
-  const resultadoCarregar = carregarVendas(hoje);
-  Logger.log("Resultado carregar vendas:", resultadoCarregar);
-}
-
-// Função para configurar permissões iniciais
-function configurarPermissoes() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  Logger.log("Planilha configurada:", spreadsheet.getName());
-  Logger.log("URL da planilha:", spreadsheet.getUrl());
-
-  // Inicializa o sistema
-  const resultado = abrirCaixa();
-  Logger.log("Sistema inicializado:", resultado);
-}
-
-// Função para obter estatísticas das vendas por período
-function obterEstatisticas(dataInicio, dataFim) {
-  try {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetMovimento = spreadsheet.getSheetByName("movimento");
-
-    if (!sheetMovimento || sheetMovimento.getLastRow() <= 1) {
-      return {
-        success: true,
-        estatisticas: {
-          totalVendas: 0,
-          valorTotal: 0,
-          ticketMedio: 0,
-          formasPagamento: {},
-          categorias: {},
-        },
-      };
-    }
-
-    const ultimaLinha = sheetMovimento.getLastRow();
-    const dados = sheetMovimento.getRange(2, 1, ultimaLinha - 1, 7).getValues();
-
-    let valorTotal = 0;
-    const formasPagamento = {};
-    const categorias = {};
-
-    dados.forEach((linha) => {
-      const valor = parseFloat(linha[4]);
-      const pagamento = linha[3];
-      const categoria = linha[2];
-
-      valorTotal += valor;
-
-      if (formasPagamento[pagamento]) {
-        formasPagamento[pagamento] += valor;
-      } else {
-        formasPagamento[pagamento] = valor;
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffa8a8 100%);
+        --dark-gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
       }
 
-      if (categorias[categoria]) {
-        categorias[categoria] += valor;
-      } else {
-        categorias[categoria] = valor;
+      .gradient-primary {
+        background: var(--primary-gradient);
       }
-    });
 
-    const estatisticas = {
-      totalVendas: dados.length,
-      valorTotal: valorTotal,
-      ticketMedio: dados.length > 0 ? valorTotal / dados.length : 0,
-      formasPagamento: formasPagamento,
-      categorias: categorias,
-    };
+      .gradient-success {
+        background: var(--success-gradient);
+      }
 
-    return {
-      success: true,
-      estatisticas: estatisticas,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Erro ao obter estatísticas: " + error.message,
-    };
-  }
-}
+      .gradient-warning {
+        background: var(--warning-gradient);
+      }
+
+      .gradient-danger {
+        background: var(--danger-gradient);
+      }
+
+      .gradient-dark {
+        background: var(--dark-gradient);
+      }
+
+      .floating-card {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .floating-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      }
+
+      .slide-in {
+        animation: slideIn 0.6s ease-out;
+      }
+
+      @keyframes slideIn {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .loading-spinner {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .category-acessorios {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .category-brinquedos {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+
+      /* Cor padrão para novas categorias */
+      .category-badge:not(.category-acessorios):not(.category-brinquedos) {
+        background: linear-gradient(135deg, #2d8cf8 0%, #004f70 100%);
+        color: #ffffff;
+      }
+
+      .modern-input {
+        transition: all 0.3s ease;
+        border: 2px solid #e2e8f0;
+        background: white;
+      }
+
+      .modern-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+      }
+
+      .modern-button {
+        transition: all 0.3s ease;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+      }
+
+      .modern-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .modern-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      .modern-button:disabled:hover {
+        transform: none !important;
+      }
+
+      .stats-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      .modal-backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+      }
+
+      .alert-modern {
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      .alert-success {
+        background: #f0fff4;
+        border-color: #48bb78;
+        color: #22543d;
+      }
+
+      .alert-error {
+        background: #fef5e7;
+        border-color: #f56565;
+        color: #742a2a;
+      }
+
+      .alert-warning {
+        background: #fffbeb;
+        border-color: #ed8936;
+        color: #7c2d12;
+      }
+
+      #statusDashboard {
+        transition: all 0.5s ease-in-out;
+      }
+
+      .bounce-in {
+        animation: bounceIn 0.8s ease-out;
+      }
+
+      @keyframes bounceIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.3);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+        70% {
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 opacity-5 pointer-events-none">
+      <div
+        class="absolute inset-0"
+        style="
+          background-image: radial-gradient(
+            circle at 1px 1px,
+            #667eea 1px,
+            transparent 0
+          );
+          background-size: 20px 20px;
+        "
+      ></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <div class="gradient-primary rounded-2xl p-8 text-white shadow-2xl floating-card">
+          <div class="flex flex-col items-center justify-center mb-4 md:flex-row md:mb-4">
+            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-2 md:mb-0 md:mr-4">
+              <i class="fas fa-cash-register text-3xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl md:text-4xl font-bold mb-2">
+                Sistema de Controle de Vendas
+              </h1>
+              <p class="text-base md:text-xl opacity-90">
+                Gerencie suas vendas com inteligência e elegância
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center justify-center space-x-4 text-sm mt-4 md:mt-0 hidden md:flex">
+            <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
+              <i class="fas fa-cloud mr-2"></i>
+              Integração Google Sheets
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-full px-4 py-2">
+              <i class="fas fa-chart-line mr-2"></i>
+              Controle em Tempo Real
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle Button -->
+      <div id="toggleSection" class="hidden text-center mb-6">
+        <button
+          id="btnToggleInfo"
+          onclick="toggleInfoSections()"
+          class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold modern-button transition-all duration-300"
+        >
+          <i class="fas fa-eye-slash mr-2"></i>Mostrar Informações do Sistema
+        </button>
+      </div>
+
+      <!-- Configuration Section -->
+      <div
+        id="configSection"
+        class="hidden mb-8 transition-all duration-500 ease-in-out"
+      >
+        <div
+          class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 slide-in"
+        >
+          <div class="flex items-center mb-4">
+            <div
+              class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4"
+            >
+              <i class="fas fa-cog text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-yellow-800">
+                Configuração do Sistema
+              </h3>
+              <p class="text-yellow-700">
+                Configure a integração com o Google Sheets
+              </p>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-table mr-2"></i>URL do Google Sheets
+              </label>
+              <input
+                type="url"
+                id="sheetUrl"
+                class="w-full px-4 py-3 rounded-lg modern-input"
+                placeholder="https://docs.google.com/spreadsheets/d/..."
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-code mr-2"></i>URL do Google Apps Script
+              </label>
+              <input
+                type="url"
+                id="webAppUrl"
+                class="w-full px-4 py-3 rounded-lg modern-input"
+                placeholder="https://script.google.com/macros/s/..."
+              />
+            </div>
+          </div>
+          <div class="flex justify-center space-x-4 mt-6">
+            <button
+              onclick="salvarConfiguracao()"
+              class="gradient-success text-white px-6 py-3 rounded-lg modern-button"
+            >
+              <i class="fas fa-save mr-2"></i>Salvar Configuração
+            </button>
+            <button
+              onclick="ocultarConfiguracao()"
+              class="bg-gray-500 text-white px-6 py-3 rounded-lg modern-button"
+            >
+              <i class="fas fa-times mr-2"></i>Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Dashboard -->
+      <div
+        id="statusDashboard"
+        class="mb-8 transition-all duration-500 ease-in-out"
+      >
+        <div class="grid md:grid-cols-4 gap-6">
+          <div class="stats-card text-center">
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3"
+            >
+              <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-600 mb-1">Data Atual</h3>
+            <div id="dataAtual" class="text-lg font-bold text-gray-800">--</div>
+          </div>
+
+          <div class="stats-card text-center">
+            <div
+              class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3"
+            >
+              <i class="fas fa-cash-register text-green-600 text-xl"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-600 mb-1">
+              Status do Caixa
+            </h3>
+            <div id="statusCaixa" class="text-lg font-bold text-red-600">
+              Fechado
+            </div>
+          </div>
+
+          <div class="stats-card text-center">
+            <div
+              class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3"
+            >
+              <i class="fas fa-shopping-cart text-purple-600 text-xl"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-600 mb-1">
+              Vendas do Dia
+            </h3>
+            <div id="vendasDia" class="text-lg font-bold text-purple-600">
+              0
+            </div>
+          </div>
+
+          <div class="stats-card text-center">
+            <div
+              class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3"
+            >
+              <i class="fas fa-cog text-orange-600 text-xl"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-gray-600 mb-1">
+              Configuração
+            </h3>
+            <button
+              onclick="mostrarConfiguracao()"
+              class="bg-orange-500 text-white px-3 py-1 rounded-full text-sm modern-button"
+            >
+              <i class="fas fa-wrench mr-1"></i>Configurar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash Control -->
+      <div class="text-center mb-8">
+        <button
+          id="btnAbrirCaixa"
+          onclick="abrirCaixa()"
+          class="gradient-primary text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button floating-card"
+        >
+          <i class="fas fa-unlock mr-2"></i>Inicializar Sistema
+        </button>
+      </div>
+
+      <!-- Alerts Container -->
+      <div id="alertContainer" class="mb-8"></div>
+
+      <!-- Sales Form -->
+      <div id="formSection" class="hidden mb-8">
+        <div class="bg-white rounded-2xl shadow-lg p-8 floating-card">
+          <div class="flex items-center mb-6">
+            <div
+              class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4"
+            >
+              <i class="fas fa-plus text-blue-600 text-xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">
+              Registrar Nova Venda
+            </h2>
+          </div>
+
+          <form id="vendaForm">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-box mr-2"></i>Produto
+                </label>
+                <input
+                  type="text"
+                  id="produto"
+                  required
+                  class="w-full px-4 py-3 rounded-lg modern-input"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-tags mr-2"></i>Categoria
+                </label>
+                <select
+                  id="categoria"
+                  required
+                  class="w-full px-4 py-3 rounded-lg modern-input"
+                >
+                  <option value="">Selecione...</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-credit-card mr-2"></i>Tipo de Pagamento
+                </label>
+                <select
+                  id="pagamento"
+                  required
+                  class="w-full px-4 py-3 rounded-lg modern-input"
+                >
+                  <option value="">Selecione...</option>
+                  <option value="Dinheiro">💸 Dinheiro</option>
+                  <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                  <option value="Cartão de Crédito">
+                    💳 Cartão de Crédito
+                  </option>
+                  <option value="PIX">📱 PIX</option>
+                  <option value="Boleto">📄 Boleto</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-dollar-sign mr-2"></i>Valor (R$)
+                </label>
+                <input
+                  type="text"
+                  id="valor"
+                  step="0.01"
+                  min="0"
+                  required
+                  class="w-full px-4 py-3 rounded-lg modern-input"
+                />
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-comment mr-2"></i>Observações
+                </label>
+                <textarea
+                  id="observacoes"
+                  rows="3"
+                  class="w-full px-4 py-3 rounded-lg modern-input"
+                  placeholder="Informações adicionais..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="text-center mt-6">
+              <button
+                id="btnAdicionarVenda"
+                type="submit"
+                class="gradient-success text-white px-8 py-4 rounded-xl text-lg font-semibold modern-button"
+              >
+                <i class="fas fa-plus mr-2"></i>Adicionar Venda
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sales List -->
+      <div id="vendasList" class="hidden">
+        <div
+          class="bg-white rounded-2xl shadow-lg overflow-hidden floating-card"
+        >
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b">
+            <div class="flex items-center">
+              <div
+                class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4"
+              >
+                <i class="fas fa-list text-green-600 text-xl"></i>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800">Vendas de Hoje</h2>
+            </div>
+          </div>
+          <!-- (Tabela Vendas de Hoje - dados) -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Item
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Produto
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Valor
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Pagamento
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Categoria
+                  </th>
+
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Observações
+                  </th>
+                  <th
+                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="vendasTableBody"
+                class="bg-white divide-y divide-gray-200"
+              ></tbody>
+            </table>
+          </div>
+
+          <div class="gradient-primary p-6 text-white text-center">
+            <h3 class="text-lg font-semibold mb-2">
+              💰 Total de Vendas do Dia
+            </h3>
+            <div id="totalVendas" class="text-3xl font-bold">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="modalExclusao"
+      class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 bounce-in"
+      >
+        <div class="text-center">
+          <div
+            class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">
+            Confirmar Exclusão
+          </h3>
+          <p class="text-gray-600 mb-6">
+            Tem certeza que deseja excluir esta venda?
+          </p>
+          <div id="vendaDetalhes" class="mb-6"></div>
+          <div class="flex space-x-4">
+            <button
+              onclick="fecharModal()"
+              class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg modern-button"
+            >
+              <i class="fas fa-times mr-2"></i>Cancelar
+            </button>
+            <button
+              id="btnConfirmarExclusao"
+              onclick="confirmarExclusao()"
+              class="flex-1 gradient-danger text-white px-6 py-3 rounded-lg modern-button"
+            >
+              <i class="fas fa-trash mr-2"></i>Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables
+      let vendas = [];
+      let caixaAberto = false;
+      let webAppUrl = "";
+      let proximoItem = 1;
+      let vendaParaExcluir = null;
+      let infoSectionsVisible = true;
+      let categorias = [];
+
+      // Initialization
+      document.addEventListener("DOMContentLoaded", function () {
+        atualizarDataAtual();
+        carregarConfiguracao();
+        atualizarStatusConfiguracao();
+        atualizarStatusCaixa();
+        setInterval(atualizarDataAtual, 60000);
+      });
+
+      // Configuration functions
+      function mostrarConfiguracao() {
+        document.getElementById("configSection").classList.remove("hidden");
+        document
+          .getElementById("configSection")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function ocultarConfiguracao() {
+        document.getElementById("configSection").classList.add("hidden");
+      }
+
+      function salvarConfiguracao() {
+        const sheetUrl = document.getElementById("sheetUrl").value;
+        const webAppUrlInput = document.getElementById("webAppUrl").value;
+
+        if (!sheetUrl || !webAppUrlInput) {
+          mostrarAlerta("Por favor, preencha ambos os campos.", "error");
+          return;
+        }
+
+        localStorage.setItem("sheetUrl", sheetUrl);
+        localStorage.setItem("webAppUrl", webAppUrlInput);
+        webAppUrl = webAppUrlInput;
+
+        ocultarConfiguracao();
+        atualizarStatusConfiguracao();
+        mostrarAlerta("Configuração salva com sucesso!", "success");
+      }
+
+      function carregarConfiguracao() {
+        const sheetUrl = localStorage.getItem("sheetUrl");
+        const savedWebAppUrl = localStorage.getItem("webAppUrl");
+
+        if (sheetUrl && savedWebAppUrl) {
+          document.getElementById("sheetUrl").value = sheetUrl;
+          document.getElementById("webAppUrl").value = savedWebAppUrl;
+          webAppUrl = savedWebAppUrl;
+          atualizarStatusConfiguracao();
+        } else {
+          setTimeout(() => {
+            if (!localStorage.getItem("configShown")) {
+              mostrarConfiguracao();
+              localStorage.setItem("configShown", "true");
+              mostrarAlerta(
+                "Configure as URLs para começar a usar o sistema!",
+                "warning"
+              );
+            }
+          }, 1000);
+        }
+      }
+
+      function atualizarStatusConfiguracao() {
+        const configBtn = document.querySelector(".stats-card button");
+        if (configBtn && webAppUrl) {
+          configBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Configurado';
+          configBtn.className =
+            "bg-green-500 text-white px-3 py-1 rounded-full text-sm modern-button";
+        } else if (configBtn) {
+          configBtn.innerHTML = '<i class="fas fa-wrench mr-1"></i>Configurar';
+          configBtn.className =
+            "bg-orange-500 text-white px-3 py-1 rounded-full text-sm modern-button";
+        }
+      }
+
+      // Date and status functions
+      function atualizarDataAtual() {
+        const agora = new Date();
+        const dataFormatada = agora.toLocaleDateString("pt-BR", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        document.getElementById("dataAtual").textContent = dataFormatada;
+      }
+
+      function atualizarStatusCaixa() {
+        const statusElement = document.getElementById("statusCaixa");
+        const btnAbrirCaixa = document.getElementById("btnAbrirCaixa");
+
+        if (caixaAberto) {
+          statusElement.textContent = "Aberto";
+          statusElement.className = "text-lg font-bold text-green-600";
+          btnAbrirCaixa.innerHTML =
+            '<i class="fas fa-lock mr-2"></i>Fechar Sistema';
+          btnAbrirCaixa.onclick = fecharCaixa;
+          esconderInfoSections();
+          document.getElementById("toggleSection").classList.remove("hidden");
+        } else {
+          statusElement.textContent = "Fechado";
+          statusElement.className = "text-lg font-bold text-red-600";
+          btnAbrirCaixa.innerHTML =
+            '<i class="fas fa-unlock mr-2"></i>Inicializar Sistema';
+          btnAbrirCaixa.onclick = abrirCaixa;
+          mostrarInfoSections();
+          document.getElementById("toggleSection").classList.add("hidden");
+        }
+      }
+
+      // Cash register functions
+      async function abrirCaixa() {
+        if (!webAppUrl) {
+          mostrarAlerta("Configure primeiro as URLs do sistema!", "error");
+          mostrarConfiguracao();
+          return;
+        }
+
+        const btn = document.getElementById("btnAbrirCaixa");
+        btn.disabled = true;
+        btn.innerHTML =
+          '<i class="fas fa-spinner loading-spinner mr-2"></i>Inicializando Sistema...';
+
+        try {
+          const params = new URLSearchParams({ action: "abrirCaixa" });
+          console.log("Inicializando sistema:", `${webAppUrl}?${params}`);
+
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Resposta do servidor:", result);
+
+          if (result.success) {
+            caixaAberto = true;
+            mostrarAlerta(
+              `Sistema inicializado com sucesso! Aba "${result.nomeAba}" está pronta para uso.`,
+              "success"
+            );
+
+            await carregarCategorias();
+            await carregarVendasDoDia();
+
+            document.getElementById("formSection").classList.remove("hidden");
+            document.getElementById("vendasList").classList.remove("hidden");
+          } else {
+            mostrarAlerta(
+              "Erro ao inicializar sistema: " +
+                (result.message || "Erro desconhecido"),
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Erro completo:", error);
+          mostrarAlerta(
+            "Erro de conexão. Verifique sua internet e as configurações. Detalhes: " +
+              error.message,
+            "error"
+          );
+          mostrarConfiguracao();
+        } finally {
+          btn.disabled = false;
+          atualizarStatusCaixa();
+        }
+      }
+
+      async function carregarCategorias() {
+        try {
+          const params = new URLSearchParams({ action: "carregarCategorias" });
+          console.log("Carregando categorias:", `${webAppUrl}?${params}`);
+
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Categorias carregadas:", result);
+
+          if (
+            result.success &&
+            Array.isArray(result.categorias) &&
+            result.categorias.length > 0
+          ) {
+            categorias = result.categorias;
+            atualizarSelectCategorias();
+            habilitarFormularioVenda(true);
+          } else {
+            categorias = [];
+            atualizarSelectCategorias();
+            mostrarAlerta(
+              "Nenhuma categoria cadastrada. Cadastre categorias na planilha para registrar vendas.",
+              "warning"
+            );
+            habilitarFormularioVenda(false);
+          }
+        } catch (error) {
+          console.error("Erro ao carregar categorias:", error);
+          categorias = [];
+          atualizarSelectCategorias();
+          mostrarAlerta(
+            "Erro ao carregar categorias. Verifique a conexão e a planilha.",
+            "error"
+          );
+          habilitarFormularioVenda(false);
+        }
+      }
+
+      function atualizarSelectCategorias() {
+        const selectCategoria = document.getElementById("categoria");
+
+        while (selectCategoria.children.length > 1) {
+          selectCategoria.removeChild(selectCategoria.lastChild);
+        }
+
+        categorias.forEach((categoria) => {
+          const option = document.createElement("option");
+          option.value = categoria;
+          option.textContent = categoria; // Removido ícone
+          selectCategoria.appendChild(option);
+        });
+      }
+
+      function habilitarFormularioVenda(habilitar) {
+        const formSection = document.getElementById("formSection");
+        const btnAdicionar = document.getElementById("btnAdicionarVenda");
+        if (habilitar) {
+          formSection.classList.remove("opacity-50");
+          btnAdicionar.disabled = false;
+          document.getElementById("categoria").disabled = false;
+        } else {
+          formSection.classList.add("opacity-50");
+          btnAdicionar.disabled = true;
+          document.getElementById("categoria").disabled = true;
+        }
+      }
+
+      function fecharCaixa() {
+        caixaAberto = false;
+        vendas = [];
+        proximoItem = 1;
+        categorias = [];
+        document.getElementById("formSection").classList.add("hidden");
+        document.getElementById("vendasList").classList.add("hidden");
+
+        const tbody = document.getElementById("vendasTableBody");
+        tbody.innerHTML = "";
+
+        const selectCategoria = document.getElementById("categoria");
+        while (selectCategoria.children.length > 1) {
+          selectCategoria.removeChild(selectCategoria.lastChild);
+        }
+
+        atualizarTotalVendas();
+        mostrarAlerta("Sistema fechado!", "success");
+        atualizarStatusCaixa();
+      }
+
+      // Sales functions
+      document
+        .getElementById("vendaForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const produto = document.getElementById("produto").value.trim();
+          const categoria = document.getElementById("categoria").value;
+          const pagamento = document.getElementById("pagamento").value;
+          const valor = parseFloat(
+            document
+              .getElementById("valor")
+              .value.replace(/\./g, "")
+              .replace(",", ".")
+          );
+          const observacoes = document
+            .getElementById("observacoes")
+            .value.trim();
+
+          if (!produto || !categoria || !pagamento || !valor || valor <= 0) {
+            mostrarAlerta(
+              "Por favor, preencha todos os campos obrigatórios com valores válidos.",
+              "error"
+            );
+            return;
+          }
+
+          const btnAdicionar = document.getElementById("btnAdicionarVenda");
+          btnAdicionar.disabled = true;
+          btnAdicionar.innerHTML =
+            '<i class="fas fa-spinner loading-spinner mr-2"></i>Adicionando venda...';
+
+          try {
+            const venda = {
+              item: proximoItem,
+              produto: produto,
+              categoria: categoria,
+              pagamento: pagamento,
+              valor: valor,
+              observacoes: observacoes,
+              timestamp: new Date().toISOString(),
+            };
+
+            console.log("Enviando venda:", venda);
+            await enviarVendaParaSheets(venda);
+
+            vendas.push(venda);
+            proximoItem++;
+            adicionarVendaATabela(venda);
+            atualizarTotalVendas();
+            limparFormulario();
+            mostrarAlerta("Venda registrada com sucesso!", "success");
+          } catch (error) {
+            console.error("Erro ao adicionar venda:", error);
+            mostrarAlerta("Erro ao registrar venda: " + error.message, "error");
+          } finally {
+            btnAdicionar.disabled = false;
+            btnAdicionar.innerHTML =
+              '<i class="fas fa-plus mr-2"></i>Adicionar Venda';
+          }
+        });
+
+      async function enviarVendaParaSheets(venda) {
+        try {
+          const params = new URLSearchParams({
+            action: "adicionarVenda",
+            venda: JSON.stringify(venda),
+          });
+
+          console.log("Enviando venda para Sheets:", `${webAppUrl}?${params}`);
+
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Resposta do servidor (venda):", result);
+
+          if (!result.success) {
+            throw new Error(
+              result.message || "Erro desconhecido ao enviar venda"
+            );
+          }
+
+          return result;
+        } catch (error) {
+          console.error("Erro ao enviar venda:", error);
+          throw error;
+        }
+      }
+
+      async function excluirVendaDoSheets(item) {
+        try {
+          const params = new URLSearchParams({
+            action: "excluirVenda",
+            item: item,
+          });
+
+          console.log("Excluindo venda:", `${webAppUrl}?${params}`);
+
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Resposta do servidor (exclusão):", result);
+
+          if (!result.success) {
+            throw new Error(
+              result.message || "Erro desconhecido ao excluir venda"
+            );
+          }
+          return result;
+        } catch (error) {
+          console.error("Erro ao excluir venda:", error);
+          throw error;
+        }
+      }
+
+      function adicionarVendaATabela(venda) {
+        const tbody = document.getElementById("vendasTableBody");
+        const row = tbody.insertRow();
+        row.id = `venda-${venda.item}`;
+        row.className = "hover:bg-gray-50 transition-colors";
+
+        // Removido ícone da categoria (Tabela Vendas de Hoje - dados)
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${
+            venda.item
+          }</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+            venda.produto
+          }</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">R$ ${venda.valor
+            .toFixed(2)
+            .replace(".", ",")}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${
+            venda.pagamento
+          }</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="category-badge category-${venda.categoria
+              .toLowerCase()
+              .replace(/[óô]/g, "o")
+              .replace(/[ç]/g, "c")
+              .replace(/\s+/g, "")}">
+              ${venda.categoria}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-900">${
+            venda.observacoes || "-"
+          }</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <button onclick="abrirModalExclusao(${
+              venda.item
+            })" class="gradient-danger text-white px-3 py-1 rounded-lg modern-button text-xs">
+              <i class="fas fa-trash mr-1"></i>Excluir
+            </button>
+          </td>
+        `;
+      }
+
+      function atualizarTotalVendas() {
+        const total = vendas.reduce((sum, venda) => sum + venda.valor, 0);
+        document.getElementById("totalVendas").textContent = `R$ ${total
+          .toFixed(2)
+          .replace(".", ",")}`;
+        document.getElementById("vendasDia").textContent = vendas.length;
+      }
+
+      function limparFormulario() {
+        document.getElementById("vendaForm").reset();
+      }
+
+      async function carregarVendasDoDia() {
+        try {
+          const hoje = new Date();
+          const dataFormatada =
+            hoje.getFullYear() +
+            "-" +
+            String(hoje.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(hoje.getDate()).padStart(2, "0");
+
+          const params = new URLSearchParams({
+            action: "carregarVendas",
+            data: dataFormatada,
+          });
+
+          console.log("Carregando vendas do dia:", `${webAppUrl}?${params}`);
+
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("Vendas do dia carregadas:", result);
+
+          if (result.success && result.vendas) {
+            vendas = result.vendas.filter(
+              (venda) =>
+                venda.item &&
+                venda.produto &&
+                venda.categoria &&
+                venda.pagamento &&
+                venda.valor
+            );
+
+            if (vendas.length > 0) {
+              const maxItem = Math.max(
+                ...vendas.map((v) => parseInt(v.item) || 0)
+              );
+              proximoItem = maxItem + 1;
+            } else {
+              proximoItem = 1;
+            }
+
+            const tbody = document.getElementById("vendasTableBody");
+            tbody.innerHTML = "";
+
+            vendas.forEach((venda) => {
+              adicionarVendaATabela(venda);
+            });
+
+            atualizarTotalVendas();
+            console.log(`${vendas.length} vendas carregadas para hoje`);
+          }
+        } catch (error) {
+          console.error("Erro ao carregar vendas do dia:", error);
+          mostrarAlerta(
+            "Erro ao carregar vendas do dia: " + error.message,
+            "warning"
+          );
+        }
+      }
+
+      // Máscara de moeda para o campo Valor (R$)
+      const inputValor = document.getElementById("valor");
+      if (inputValor) {
+        inputValor.addEventListener("input", function (e) {
+          let v = e.target.value.replace(/\D/g, "");
+          v = (parseInt(v, 10) / 100).toFixed(2) + "";
+          v = v.replace(".", ",");
+          v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+          e.target.value = v;
+        });
+        // Corrige o valor para número ao sair do campo
+        inputValor.addEventListener("blur", function (e) {
+          let v = e.target.value.replace(/\./g, "").replace(",", ".");
+          e.target.value = parseFloat(v).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        });
+      }
+      // Interface functions
+      function mostrarAlerta(mensagem, tipo) {
+        const alertContainer = document.getElementById("alertContainer");
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert-modern alert-${tipo}`;
+
+        const icon =
+          tipo === "success"
+            ? "check-circle"
+            : tipo === "error"
+            ? "exclamation-circle"
+            : "exclamation-triangle";
+        alertDiv.innerHTML = `
+          <div class="flex items-center">
+            <i class="fas fa-${icon} mr-3"></i>
+            <span>${mensagem}</span>
+          </div>
+        `;
+
+        alertContainer.appendChild(alertDiv);
+
+        setTimeout(() => {
+          alertDiv.remove();
+        }, 7000);
+      }
+
+      // Deletion functions
+      function abrirModalExclusao(item) {
+        const venda = vendas.find((v) => v.item == item);
+        if (!venda) {
+          mostrarAlerta("Venda não encontrada!", "error");
+          return;
+        }
+
+        vendaParaExcluir = venda;
+
+        const detalhes = document.getElementById("vendaDetalhes");
+        detalhes.innerHTML = `
+          <div class="bg-gray-50 rounded-lg p-4 text-left">
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><strong>Item:</strong> ${venda.item}</div>
+              <div><strong>Produto:</strong> ${venda.produto}</div>
+              <div><strong>Categoria:</strong> ${venda.categoria}</div>
+              <div><strong>Valor:</strong> R$ ${venda.valor
+                .toFixed(2)
+                .replace(".", ",")}</div>
+              <div class="col-span-2"><strong>Pagamento:</strong> ${
+                venda.pagamento
+              }</div>
+              ${
+                venda.observacoes
+                  ? `<div class="col-span-2"><strong>Observações:</strong> ${venda.observacoes}</div>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+
+        document.getElementById("modalExclusao").classList.remove("hidden");
+      }
+
+      function fecharModal() {
+        document.getElementById("modalExclusao").classList.add("hidden");
+        vendaParaExcluir = null;
+      }
+
+      async function confirmarExclusao() {
+        if (!vendaParaExcluir) return;
+
+        const btnExcluir = document.getElementById("btnConfirmarExclusao");
+        btnExcluir.disabled = true;
+        btnExcluir.innerHTML =
+          '<i class="fas fa-spinner loading-spinner mr-2"></i>Excluindo...';
+
+        try {
+          await excluirVendaDoSheets(vendaParaExcluir.item);
+
+          vendas = vendas.filter((v) => v.item != vendaParaExcluir.item);
+
+          const row = document.getElementById(`venda-${vendaParaExcluir.item}`);
+          if (row) {
+            row.remove();
+          }
+
+          atualizarTotalVendas();
+          fecharModal();
+          mostrarAlerta("Venda excluída com sucesso!", "success");
+        } catch (error) {
+          mostrarAlerta("Erro ao excluir venda: " + error.message, "error");
+          console.error("Erro ao excluir:", error);
+        } finally {
+          btnExcluir.disabled = false;
+          btnExcluir.innerHTML = '<i class="fas fa-trash mr-2"></i>Excluir';
+        }
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        const modal = document.getElementById("modalExclusao");
+        if (event.target === modal) {
+          fecharModal();
+        }
+      };
+
+      // Toggle functions for info sections
+      function toggleInfoSections() {
+        if (infoSectionsVisible) {
+          esconderInfoSections();
+        } else {
+          mostrarInfoSections();
+        }
+      }
+
+      function esconderInfoSections() {
+        const statusDashboard = document.getElementById("statusDashboard");
+        const configSection = document.getElementById("configSection");
+        const btnToggle = document.getElementById("btnToggleInfo");
+
+        statusDashboard.style.maxHeight = statusDashboard.scrollHeight + "px";
+        statusDashboard.style.opacity = "1";
+
+        setTimeout(() => {
+          statusDashboard.style.maxHeight = "0";
+          statusDashboard.style.opacity = "0";
+          statusDashboard.style.marginBottom = "0";
+          statusDashboard.style.overflow = "hidden";
+        }, 10);
+
+        if (!configSection.classList.contains("hidden")) {
+          configSection.style.maxHeight = "0";
+          configSection.style.opacity = "0";
+          configSection.style.marginBottom = "0";
+          configSection.style.overflow = "hidden";
+        }
+
+        btnToggle.innerHTML =
+          '<i class="fas fa-eye mr-2"></i>Mostrar Informações do Sistema';
+        infoSectionsVisible = false;
+      }
+
+      function mostrarInfoSections() {
+        const statusDashboard = document.getElementById("statusDashboard");
+        const btnToggle = document.getElementById("btnToggleInfo");
+
+        statusDashboard.style.maxHeight = "none";
+        statusDashboard.style.opacity = "1";
+        statusDashboard.style.marginBottom = "2rem";
+        statusDashboard.style.overflow = "visible";
+
+        btnToggle.innerHTML =
+          '<i class="fas fa-eye-slash mr-2"></i>Ocultar Informações do Sistema';
+        infoSectionsVisible = true;
+      }
+    </script>
+  </body>
+</html>
