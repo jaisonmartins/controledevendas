@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Vendas</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="cash-register.png" />
+    <style>
+      * {
+        font-family: "Inter", sans-serif;
+        transition: color 0.3s ease, background-color 0.3s ease,
+          border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      :root {
+        --primary: #3b82f6;
+        --primary-dark: #2563eb;
+        --secondary: #64748b;
+        --accent: #8b5cf6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #06b6d4;
+
+        /* Light theme */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-tertiary: #f1f5f9;
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --shadow-light: rgba(0, 0, 0, 0.1);
+        --shadow-medium: rgba(0, 0, 0, 0.15);
+        --shadow-heavy: rgba(0, 0, 0, 0.25);
+      }
+
+      [data-theme="dark"] {
+        /* Dark theme */
+        --bg-primary: #1e293b;
+        --bg-secondary: #0f172a;
+        --bg-tertiary: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border-color: #334155;
+        --shadow-light: rgba(0, 0, 0, 0.3);
+        --shadow-medium: rgba(0, 0, 0, 0.4);
+        --shadow-heavy: rgba(0, 0, 0, 0.6);
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          var(--bg-tertiary) 100%
+        );
+        color: var(--text-primary);
+        min-height: 100vh;
+      }
+
+      .card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px var(--shadow-light);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px var(--shadow-medium);
+      }
+
+      .card-header {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--accent) 100%
+        );
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .stats-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+      }
+
+      .stats-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+
+      .stats-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .table-modern {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      .table-modern th {
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        font-weight: 700;
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .table-modern th:first-child {
+        border-top-left-radius: 0.5rem;
+      }
+
+      .table-modern th:last-child {
+        border-top-right-radius: 0.5rem;
+      }
+
+      .table-modern td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+      }
+
+      .table-modern tr:hover td {
+        background: var(--bg-secondary);
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.925rem;
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.925rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 1000;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-color);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px var(--shadow-light);
+      }
+
+      .theme-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 30px var(--shadow-medium);
+      }
+
+      .category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 2rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--accent) 100%
+        );
+        color: white;
+      }
+
+      .nav-button {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+        transition: all 0.3s ease;
+      }
+
+      .nav-button:hover:not(:disabled) {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+      }
+
+      .nav-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+      }
+
+      .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+      }
+
+      .section-title i {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.8;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .theme-toggle {
+          top: 1rem;
+          right: 1rem;
+          width: 3rem;
+          height: 3rem;
+          font-size: 1rem;
+        }
+
+        .stats-value {
+          font-size: 1.5rem;
+        }
+
+        .card-header {
+          padding: 1.5rem;
+        }
+
+        .stats-icon {
+          width: 3rem;
+          height: 3rem;
+          font-size: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+      <i class="fas fa-moon" id="theme-icon"></i>
+    </button>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="text-center mb-10 fade-in">
+        <div class="card card-header">
+          <div
+            class="flex flex-col items-center justify-center mb-4 md:flex-row"
+          >
+            <div
+              class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-6"
+            >
+              <i class="fas fa-chart-bar text-3xl"></i>
+            </div>
+            <div>
+              <h1 class="text-3xl md:text-4xl font-bold mb-3">
+                Dashboard de Vendas
+              </h1>
+              <p class="text-base md:text-xl opacity-90">
+                Acompanhe o desempenho das vendas por período, categoria e
+                pagamento
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro por data -->
+      <div class="card p-6 mb-8 fade-in">
+        <form
+          id="filtroForm"
+          class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end"
+        >
+          <div>
+            <label
+              class="block text-sm font-semibold mb-3"
+              style="color: var(--text-secondary)"
+            >
+              <i class="fas fa-calendar-alt mr-2"></i>Data Inicial
+            </label>
+            <input type="date" id="dataInicio" class="form-input" required />
+          </div>
+          <div>
+            <label
+              class="block text-sm font-semibold mb-3"
+              style="color: var(--text-secondary)"
+            >
+              <i class="fas fa-calendar-alt mr-2"></i>Data Final
+            </label>
+            <input type="date" id="dataFim" class="form-input" required />
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary w-full">
+              <i class="fas fa-search"></i>
+              Buscar Relatório
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Cards de resumo -->
+      <div id="resumoCards" class="grid md:grid-cols-3 gap-6 mb-8"></div>
+
+      <!-- Gráficos e tabelas -->
+      <div class="grid lg:grid-cols-2 gap-8 mb-8">
+        <div class="card p-6 fade-in">
+          <h2 class="section-title">
+            <i
+              class="fas fa-calendar-day"
+              style="
+                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                color: white;
+              "
+            ></i>
+            Vendas por Dia
+          </h2>
+          <div id="graficoVendasDia" class="min-h-[250px]"></div>
+        </div>
+        <div class="card p-6 fade-in">
+          <h2 class="section-title">
+            <i
+              class="fas fa-tags"
+              style="
+                background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                color: white;
+              "
+            ></i>
+            Vendas por Categoria
+          </h2>
+          <div id="graficoCategorias" class="min-h-[250px]"></div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-8 mb-8">
+        <div class="card p-6 fade-in">
+          <h2 class="section-title">
+            <i
+              class="fas fa-credit-card"
+              style="
+                background: linear-gradient(135deg, #10b981, #06b6d4);
+                color: white;
+              "
+            ></i>
+            Vendas por Tipo de Pagamento
+          </h2>
+          <div id="graficoPagamentos" class="min-h-[250px]"></div>
+        </div>
+        <div class="card p-6 fade-in">
+          <h2 class="section-title">
+            <i
+              class="fas fa-box"
+              style="
+                background: linear-gradient(135deg, #f59e0b, #f97316);
+                color: white;
+              "
+            ></i>
+            Produtos Mais Vendidos
+          </h2>
+          <div id="tabelaProdutos" class="min-h-[250px]"></div>
+        </div>
+      </div>
+
+      <!-- Nova tabela: Produtos Mais Vendidos por Dia -->
+      <div class="card p-6 fade-in">
+        <h2 class="section-title">
+          <i
+            class="fas fa-calendar-check"
+            style="
+              background: linear-gradient(135deg, #06b6d4, #3b82f6);
+              color: white;
+            "
+          ></i>
+          Produtos Mais Vendidos por Dia
+        </h2>
+        <div id="tabelaProdutosPorDia" class="min-h-[250px]"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Theme toggle functionality
+      function toggleTheme() {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+
+        const themeIcon = document.getElementById("theme-icon");
+        themeIcon.className =
+          newTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
+      }
+
+      // Initialize theme
+      function initTheme() {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        const themeIcon = document.getElementById("theme-icon");
+        themeIcon.className =
+          savedTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
+      }
+
+      // Make toggleTheme available globally
+      window.toggleTheme = toggleTheme;
+
+      // Initialize theme on load
+      initTheme();
+
+      import { WEBAPP_URL } from "./conexao.js";
+
+      // Função para mostrar mensagens de erro no dashboard
+      function mostrarErroDashboard(msg) {
+        let erroDiv = document.getElementById("msgErroDashboard");
+        if (!erroDiv) {
+          erroDiv = document.createElement("div");
+          erroDiv.id = "msgErroDashboard";
+          erroDiv.className = "alert alert-error";
+          document.body.prepend(erroDiv);
+        }
+        erroDiv.innerHTML = `
+                <i class='fas fa-exclamation-triangle'></i>
+                <span><strong>Erro:</strong> ${msg}</span>
+            `;
+        setTimeout(() => {
+          erroDiv.remove();
+        }, 10000);
+      }
+
+      // Função para mostrar mensagens de sucesso centralizadas
+      function mostrarSucessoDashboard(msg) {
+        let msgDiv = document.getElementById("msgSucessoConexao");
+        if (!msgDiv) {
+          msgDiv = document.createElement("div");
+          msgDiv.id = "msgSucessoConexao";
+          msgDiv.className = "alert alert-success max-w-2xl mx-auto";
+
+          // Posiciona logo abaixo do header
+          const header = document.querySelector(".text-center.mb-10");
+          if (header && header.parentNode) {
+            header.parentNode.insertBefore(msgDiv, header.nextSibling);
+          } else {
+            document.body.prepend(msgDiv);
+          }
+        }
+        msgDiv.innerHTML = `
+                <i class='fas fa-check-circle'></i>
+                <span><strong>${msg}</strong></span>
+            `;
+        setTimeout(() => {
+          msgDiv.remove();
+        }, 8000);
+      }
+
+      // Função para buscar estatísticas no backend
+      async function buscarEstatisticas(dataInicio, dataFim) {
+        const webAppUrl = WEBAPP_URL;
+        if (!webAppUrl) {
+          mostrarErroDashboard("URL do backend não configurada!");
+          return null;
+        }
+        const params = new URLSearchParams({
+          action: "obterEstatisticas",
+          dataInicio,
+          dataFim,
+        });
+        try {
+          const response = await fetch(`${webAppUrl}?${params}`, {
+            method: "GET",
+            mode: "cors",
+          });
+          if (!response.ok)
+            throw new Error("Erro ao buscar estatísticas: " + response.status);
+          return await response.json();
+        } catch (error) {
+          mostrarErroDashboard("Erro ao buscar estatísticas: " + error.message);
+          return null;
+        }
+      }
+
+      // Renderização dos cards de resumo
+      function renderResumo(estatisticas) {
+        const cards = [
+          {
+            icon: "fa-shopping-cart",
+            label: "Total de Vendas",
+            value: estatisticas.totalVendas,
+            color: "background: linear-gradient(135deg, #10b981, #059669);",
+          },
+          {
+            icon: "fa-money-bill-wave",
+            label: "Valor Total",
+            value: `R$ ${estatisticas.valorTotal.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+            })}`,
+            color: "background: linear-gradient(135deg, #3b82f6, #2563eb);",
+          },
+          {
+            icon: "fa-ticket-alt",
+            label: "Ticket Médio",
+            value: `R$ ${estatisticas.ticketMedio.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+            })}`,
+            color: "background: linear-gradient(135deg, #f59e0b, #d97706);",
+          },
+        ];
+
+        document.getElementById("resumoCards").innerHTML = cards
+          .map(
+            (card) => `
+                    <div class="stats-card card fade-in">
+                        <div class="stats-icon" style="${card.color} color: white;">
+                            <i class="fas ${card.icon}"></i>
+                        </div>
+                        <div class="stats-value">${card.value}</div>
+                        <div class="stats-label">${card.label}</div>
+                    </div>
+                `
+          )
+          .join("");
+      }
+
+      // Renderização dos gráficos/tabelas
+      function renderGraficoVendasDia(vendasPorDia) {
+        const container = document.getElementById("graficoVendasDia");
+        if (!vendasPorDia || Object.keys(vendasPorDia).length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-8" style="color: var(--text-muted);">
+                        <i class="fas fa-chart-line text-4xl mb-4"></i>
+                        <p>Nenhum dado encontrado para o período selecionado</p>
+                    </div>
+                `;
+          return;
+        }
+
+        container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar mr-2"></i>Data</th>
+                                <th><i class="fas fa-shopping-cart mr-2"></i>Vendas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(vendasPorDia)
+                              .map(
+                                ([data, qtd]) => `
+                                    <tr>
+                                        <td class="font-medium">${new Date(
+                                          data
+                                        ).toLocaleDateString("pt-BR")}</td>
+                                        <td>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;">
+                                                ${qtd}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+      }
+
+      function renderGraficoCategorias(categorias) {
+        const container = document.getElementById("graficoCategorias");
+        if (!categorias || Object.keys(categorias).length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-8" style="color: var(--text-muted);">
+                        <i class="fas fa-tags text-4xl mb-4"></i>
+                        <p>Nenhuma categoria encontrada</p>
+                    </div>
+                `;
+          return;
+        }
+
+        container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-tag mr-2"></i>Categoria</th>
+                                <th><i class="fas fa-dollar-sign mr-2"></i>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(categorias)
+                              .map(
+                                ([cat, val]) => `
+                                    <tr>
+                                        <td>
+                                            <span class="category-badge">
+                                                <i class="fas fa-tag"></i>
+                                                ${cat}
+                                            </span>
+                                        </td>
+                                        <td class="font-semibold" style="color: var(--success);">
+                                            R$ ${val.toLocaleString("pt-BR", {
+                                              minimumFractionDigits: 2,
+                                            })}
+                                        </td>
+                                    </tr>
+                                `
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+      }
+
+      function renderGraficoPagamentos(pagamentos) {
+        const container = document.getElementById("graficoPagamentos");
+        if (!pagamentos || Object.keys(pagamentos).length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-8" style="color: var(--text-muted);">
+                        <i class="fas fa-credit-card text-4xl mb-4"></i>
+                        <p>Nenhum método de pagamento encontrado</p>
+                    </div>
+                `;
+          return;
+        }
+
+        container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-credit-card mr-2"></i>Tipo de Pagamento</th>
+                                <th><i class="fas fa-dollar-sign mr-2"></i>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(pagamentos)
+                              .map(
+                                ([tipo, val]) => `
+                                    <tr>
+                                        <td class="font-medium">
+                                            <i class="fas fa-credit-card mr-2" style="color: var(--primary);"></i>
+                                            ${tipo}
+                                        </td>
+                                        <td class="font-semibold" style="color: var(--success);">
+                                            R$ ${val.toLocaleString("pt-BR", {
+                                              minimumFractionDigits: 2,
+                                            })}
+                                        </td>
+                                    </tr>
+                                `
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+      }
+
+      function renderTabelaProdutos(produtos) {
+        const container = document.getElementById("tabelaProdutos");
+        if (!produtos || produtos.length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-8" style="color: var(--text-muted);">
+                        <i class="fas fa-box text-4xl mb-4"></i>
+                        <p>Nenhum produto encontrado</p>
+                    </div>
+                `;
+          return;
+        }
+
+        container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-box mr-2"></i>Produto</th>
+                                <th><i class="fas fa-hashtag mr-2"></i>Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${produtos
+                              .map(
+                                (prod) => `
+                                    <tr>
+                                        <td class="font-medium">${prod.produto}</td>
+                                        <td>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, var(--success), #059669); color: white;">
+                                                ${prod.quantidade}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+      }
+
+      // Controle de navegação dos dias
+      let diasProdutos = [];
+      let diaAtualIndex = 0;
+
+      function renderTabelaProdutosPorDia(produtosPorDia) {
+        const container = document.getElementById("tabelaProdutosPorDia");
+        diasProdutos = Object.keys(produtosPorDia).sort(
+          (a, b) => new Date(a) - new Date(b)
+        );
+
+        if (diasProdutos.length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-8" style="color: var(--text-muted);">
+                        <i class="fas fa-calendar-times text-4xl mb-4"></i>
+                        <p>Nenhum produto por dia encontrado</p>
+                    </div>
+                `;
+          return;
+        }
+
+        // Mostra o último dia por padrão
+        if (diaAtualIndex < 0 || diaAtualIndex >= diasProdutos.length) {
+          diaAtualIndex = diasProdutos.length - 1;
+        }
+
+        const data = diasProdutos[diaAtualIndex];
+        const produtos = produtosPorDia[data] || [];
+
+        container.innerHTML = `
+                <div class="flex items-center justify-between mb-6 p-4 rounded-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-color);">
+                    <button id="btnDiaAnterior" class="nav-button" ${
+                      diaAtualIndex === 0 ? "disabled" : ""
+                    } title="Dia anterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="text-center">
+                        <h3 class="font-bold text-xl" style="color: var(--primary);">
+                            <i class="fas fa-calendar-day mr-2"></i>
+                            ${new Date(data).toLocaleDateString("pt-BR")}
+                        </h3>
+                        <p class="text-sm" style="color: var(--text-muted);">
+                            ${diaAtualIndex + 1} de ${diasProdutos.length} dias
+                        </p>
+                    </div>
+                    <button id="btnDiaProximo" class="nav-button" ${
+                      diaAtualIndex === diasProdutos.length - 1
+                        ? "disabled"
+                        : ""
+                    } title="Próximo dia">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-box mr-2"></i>Produto</th>
+                                <th><i class="fas fa-hashtag mr-2"></i>Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${
+                              produtos.length > 0
+                                ? produtos
+                                    .map(
+                                      (prod) => `
+                                    <tr>
+                                        <td class="font-medium">${prod.produto}</td>
+                                        <td>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, var(--success), #059669); color: white;">
+                                                ${prod.quantidade}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `
+                                    )
+                                    .join("")
+                                : `
+                                <tr>
+                                    <td colspan="2" class="text-center py-8" style="color: var(--text-muted);">
+                                        <i class="fas fa-inbox text-3xl mb-2 block"></i>
+                                        Nenhum produto vendido neste dia
+                                    </td>
+                                </tr>
+                            `
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        // Eventos das setas
+        document.getElementById("btnDiaAnterior").onclick = function () {
+          if (diaAtualIndex > 0) {
+            diaAtualIndex--;
+            renderTabelaProdutosPorDia(produtosPorDia);
+          }
+        };
+
+        document.getElementById("btnDiaProximo").onclick = function () {
+          if (diaAtualIndex < diasProdutos.length - 1) {
+            diaAtualIndex++;
+            renderTabelaProdutosPorDia(produtosPorDia);
+          }
+        };
+      }
+
+      // Função para buscar o dia atual e inicializar o dashboard
+      async function inicializarDashboardComDiaAtual() {
+        const hoje = new Date();
+        const yyyy = hoje.getFullYear();
+        const mm = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dd = String(hoje.getDate()).padStart(2, "0");
+        const dataHoje = `${yyyy}-${mm}-${dd}`;
+
+        document.getElementById("dataInicio").value = dataHoje;
+        document.getElementById("dataFim").value = dataHoje;
+
+        const resultDia = await buscarEstatisticas(dataHoje, dataHoje);
+        if (!resultDia || !resultDia.success) return;
+
+        mostrarSucessoDashboard(
+          "Sistema inicializado com sucesso! Conexão estabelecida com o Google Sheets."
+        );
+
+        const est = resultDia.estatisticas;
+        renderResumo(est);
+        renderGraficoVendasDia(est.vendasPorDia || {});
+        renderGraficoCategorias(est.categorias || {});
+        renderGraficoPagamentos(est.formasPagamento || {});
+        renderTabelaProdutos(est.produtosMaisVendidos || []);
+
+        // Inicializa navegação de Produtos Mais Vendidos por Dia no dia atual
+        if (est.produtosPorDia && Object.keys(est.produtosPorDia).length > 0) {
+          const dias = Object.keys(est.produtosPorDia).sort(
+            (a, b) => new Date(a) - new Date(b)
+          );
+          let indexHoje = dias.findIndex((d) => d === dataHoje);
+          if (indexHoje === -1) indexHoje = dias.length - 1;
+          diaAtualIndex = indexHoje;
+          renderTabelaProdutosPorDia(est.produtosPorDia);
+        } else {
+          renderTabelaProdutosPorDia({});
+        }
+      }
+
+      // Evento do filtro
+      document
+        .getElementById("filtroForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const dataInicio = document.getElementById("dataInicio").value;
+          const dataFim = document.getElementById("dataFim").value;
+
+          if (!dataInicio || !dataFim) {
+            mostrarErroDashboard("Preencha as datas inicial e final.");
+            return;
+          }
+
+          const result = await buscarEstatisticas(dataInicio, dataFim);
+          if (!result) return;
+
+          if (!result.success) {
+            mostrarErroDashboard(
+              result.message || "Nenhum dado retornado do backend."
+            );
+            return;
+          }
+
+          mostrarSucessoDashboard("Relatório atualizado com sucesso!");
+
+          const est = result.estatisticas;
+          renderResumo(est);
+          renderGraficoVendasDia(est.vendasPorDia || {});
+          renderGraficoCategorias(est.categorias || {});
+          renderGraficoPagamentos(est.formasPagamento || {});
+          renderTabelaProdutos(est.produtosMaisVendidos || []);
+          renderTabelaProdutosPorDia(est.produtosPorDia || {});
+        });
+
+      // Inicializa dashboard automaticamente ao carregar
+      window.addEventListener(
+        "DOMContentLoaded",
+        inicializarDashboardComDiaAtual
+      );
+    </script>
+  </body>
+</html>
