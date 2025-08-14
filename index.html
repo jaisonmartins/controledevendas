@@ -961,17 +961,15 @@
           const categoria = document.getElementById("categoria").value;
           const pagamento = document.getElementById("pagamento").value;
           const valorString = document.getElementById("valor").value.trim();
-          // Valida se o valor está em um formato válido
-          if (!/^\d{1,}((\.|,)\d{2})?$/.test(valorString)) {
-            mostrarAlerta(
-              "⚠️ Formato do valor inválido! Use 0,00 ou 0.00",
-              "error"
-            );
+          // Extrai o valor numérico da máscara
+          const valorNumerico = valorString
+            .replace(/[^\d,]/g, "")
+            .replace(",", ".");
+          const valor = parseFloat(valorNumerico);
+          if (isNaN(valor) || valor <= 0) {
+            mostrarAlerta("⚠️ Preencha o campo Valor corretamente!", "error");
             return;
           }
-          const valor = parseFloat(
-            valorString.replace(/\./g, "").replace(",", ".")
-          );
           const observacoes = document
             .getElementById("observacoes")
             .value.trim();
@@ -1393,17 +1391,15 @@
           const valorString = document
             .getElementById("editarValor")
             .value.trim();
-          // Valida se o valor está em um formato válido
-          if (!/^\d{1,}((\.|,)\d{2})?$/.test(valorString)) {
-            mostrarAlerta(
-              "⚠️ Formato do valor inválido! Use 0,00 ou 0.00",
-              "error"
-            );
+          // Extrai o valor numérico da máscara
+          const valorNumerico = valorString
+            .replace(/[^\d,]/g, "")
+            .replace(",", ".");
+          const valor = parseFloat(valorNumerico);
+          if (isNaN(valor) || valor <= 0) {
+            mostrarAlerta("⚠️ Preencha o campo Valor corretamente!", "error");
             return;
           }
-          const valor = parseFloat(
-            valorString.replace(/\./g, "").replace(",", ".")
-          );
           const observacoes = document
             .getElementById("editarObservacoes")
             .value.trim();
@@ -1509,30 +1505,38 @@
       }
 
       // MÁSCARAS DE FORMATAÇÃO
-      function aplicarMascaraMoeda(inputId) {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-
-        input.addEventListener("input", function (e) {
-          let v = e.target.value.replace(/\D/g, "");
-          v = (parseInt(v, 10) / 100).toFixed(2) + "";
-          v = v.replace(".", ",");
-          v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-          e.target.value = v;
-        });
-
-        input.addEventListener("blur", function (e) {
-          let v = e.target.value.replace(/\./g, "").replace(",", ".");
-          e.target.value = parseFloat(v).toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
-        });
+      // Máscara de moeda para campo de valor
+      function aplicarMascaraMoeda(input) {
+        let valor = input.value.replace(/\D/g, ""); // Remove tudo que não for dígito
+        valor = (parseInt(valor, 10) || 0).toString();
+        if (valor.length < 3) valor = valor.padStart(3, "0");
+        let reais = valor.slice(0, -2);
+        let centavos = valor.slice(-2);
+        reais = reais.replace(/^0+/, "");
+        if (reais === "") reais = "0";
+        input.value = `R$ ${reais},${centavos}`;
       }
 
-      // Aplica máscaras nos campos de valor
-      aplicarMascaraMoeda("valor");
-      aplicarMascaraMoeda("editarValor");
+      document.addEventListener("DOMContentLoaded", function () {
+        const campoValor = document.getElementById("valor");
+        if (campoValor) {
+          campoValor.addEventListener("input", function () {
+            aplicarMascaraMoeda(this);
+          });
+          campoValor.addEventListener("blur", function () {
+            aplicarMascaraMoeda(this);
+          });
+        }
+        const campoValorEditar = document.getElementById("editarValor");
+        if (campoValorEditar) {
+          campoValorEditar.addEventListener("input", function () {
+            aplicarMascaraMoeda(this);
+          });
+          campoValorEditar.addEventListener("blur", function () {
+            aplicarMascaraMoeda(this);
+          });
+        }
+      });
 
       // EVENT LISTENERS GLOBAIS
       // Fecha modais ao clicar fora
