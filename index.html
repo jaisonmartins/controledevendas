@@ -358,6 +358,15 @@
         font-size: 1rem !important;
         line-height: 1rem !important;
       }
+      .fixedjm {
+        position: fixed;
+        bottom: 0.5rem;
+        right: 1rem;
+        left: auto;
+        top: auto;
+        transform: none;
+        z-index: 50;
+      }
     </style>
   </head>
   <body class="min-h-screen bg-gray-50">
@@ -497,11 +506,11 @@
         </div>
         <!-- Botão removido daqui, será colocado fora do statusDashboard -->
       </div>
+
       <!-- Botão Ocultar/Mostrar Cards sempre fixo no mobile -->
-      <!-- Botão Ocultar/Mostrar Cards fixo no topo no mobile -->
       <div class="w-full flex justify-center md:hidden">
         <button
-          class="text-xs px-3 py-2 bg-gray-300 rounded flex items-center gap-2 fixed top-0 left-1/2 transform -translate-x-1/2 mt-2 z-50 shadow-lg"
+          class="text-xs px-3 py-2 bg-gray-300 rounded flex items-center gap-2 fixedjm top-0 left-1/2 transform -translate-x-1/2 mt-2 z-50 shadow-lg"
           id="btnOcultarTodosCards"
           style="display: block"
         >
