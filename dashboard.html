@@ -458,15 +458,15 @@
         <div class="card p-6 fade-in">
           <h2 class="section-title">
             <i
-              class="fas fa-calendar-day"
+              class="fas fa-credit-card"
               style="
-                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                background: linear-gradient(135deg, #10b981, #06b6d4);
                 color: white;
               "
             ></i>
-            Vendas por Dia
+            Vendas por Tipo de Pagamento
           </h2>
-          <div id="graficoVendasDia" class="min-h-[250px]"></div>
+          <div id="graficoPagamentos" class="min-h-[250px]"></div>
         </div>
         <div class="card p-6 fade-in">
           <h2 class="section-title">
@@ -487,15 +487,15 @@
         <div class="card p-6 fade-in">
           <h2 class="section-title">
             <i
-              class="fas fa-credit-card"
+              class="fas fa-calendar-day"
               style="
-                background: linear-gradient(135deg, #10b981, #06b6d4);
+                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
                 color: white;
               "
             ></i>
-            Vendas por Tipo de Pagamento
+            Vendas por Dia
           </h2>
-          <div id="graficoPagamentos" class="min-h-[250px]"></div>
+          <div id="graficoVendasDia" class="min-h-[250px]"></div>
         </div>
         <div class="card p-6 fade-in">
           <h2 class="section-title">
@@ -526,6 +526,128 @@
         </h2>
         <div id="tabelaProdutosPorDia" class="min-h-[250px]"></div>
       </div>
+      <!-- Nova seção: Total por Vendas -->
+      <div class="card p-6 fade-in mt-8">
+        <h2 class="section-title">
+          <i
+            class="fas fa-list"
+            style="
+              background: linear-gradient(135deg, #06b6d4, #10b981);
+              color: white;
+            "
+          ></i>
+          Total por Vendas
+        </h2>
+        <div id="tabelaVendasDetalhadas" class="min-h-[250px]"></div>
+      </div>
+
+      <script>
+        // Função auxiliar para obter todas as datas no intervalo
+        function obterDatasNoIntervalo(dataInicio, dataFim) {
+          const datas = [];
+          let atual = new Date(dataInicio);
+          const fim = new Date(dataFim);
+          while (atual <= fim) {
+            const yyyy = atual.getFullYear();
+            const mm = String(atual.getMonth() + 1).padStart(2, "0");
+            const dd = String(atual.getDate()).padStart(2, "0");
+            datas.push(`${yyyy}-${mm}-${dd}`);
+            atual.setDate(atual.getDate() + 1);
+          }
+          return datas;
+        }
+
+        // Busca todas as vendas detalhadas no período
+        async function buscarVendasDetalhadas(dataInicio, dataFim) {
+          const webAppUrl = WEBAPP_URL;
+          const datas = obterDatasNoIntervalo(dataInicio, dataFim);
+          let todasVendas = [];
+
+          for (const data of datas) {
+            try {
+              const resp = await fetch(
+                `${webAppUrl}?action=carregarVendas&data=${data}`
+              );
+              const json = await resp.json();
+              if (json.success && json.vendas.length) {
+                todasVendas = todasVendas.concat(json.vendas);
+              }
+            } catch (error) {
+              console.error("Erro ao carregar vendas de", data, error);
+            }
+          }
+
+          renderTabelaVendasDetalhadas(todasVendas);
+        }
+
+        // Renderiza tabela de vendas detalhadas
+        function renderTabelaVendasDetalhadas(vendas) {
+          const container = document.getElementById("tabelaVendasDetalhadas");
+          if (!vendas || vendas.length === 0) {
+            container.innerHTML = `
+              <div class="text-center py-8" style="color: var(--text-muted);">
+                <i class="fas fa-inbox text-4xl mb-4"></i>
+                <p>Nenhuma venda encontrada no período selecionado.</p>
+              </div>`;
+            return;
+          }
+
+          // Ordena por data mais recente
+          vendas.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          container.innerHTML = `
+            <div class="overflow-x-auto">
+              <table class="table-modern">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Pagamento</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${vendas
+                    .map(
+                      (v) => `
+                      <tr>
+                        <td>${v.item}</td>
+                        <td>${v.produto}</td>
+                        <td>${v.categoria}</td>
+                        <td>${v.pagamento}</td>
+                        <td>R$ ${parseFloat(v.valor).toFixed(2)}</td>
+                        <td>${v.data}</td>
+                      </tr>`
+                    )
+                    .join("")}
+                </tbody>
+              </table>
+            </div>`;
+        }
+
+        // Integra com o filtro já existente
+        document
+          .getElementById("filtroForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const dataInicio = document.getElementById("dataInicio").value;
+            const dataFim = document.getElementById("dataFim").value;
+
+            await buscarVendasDetalhadas(dataInicio, dataFim);
+          });
+
+        // Também carrega as vendas do dia atual ao iniciar
+        window.addEventListener("DOMContentLoaded", async () => {
+          const hoje = new Date();
+          const yyyy = hoje.getFullYear();
+          const mm = String(hoje.getMonth() + 1).padStart(2, "0");
+          const dd = String(hoje.getDate()).padStart(2, "0");
+          const dataHoje = `${yyyy}-${mm}-${dd}`;
+          await buscarVendasDetalhadas(dataHoje, dataHoje);
+        });
+      </script>
     </div>
 
     <script type="module">
