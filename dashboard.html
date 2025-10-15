@@ -1,9 +1,14 @@
+<!-- =======================
+===== PARTE 1: HEAD ========
+======================== -->
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard de Vendas</title>
+    <title>Dashboard de Vendas 2.0 — Valores</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Tailwind / Font / Icons -->
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
@@ -13,1151 +18,1206 @@
       href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="icon" type="image/png" href="cash-register.png" />
+
+    <!-- Chart.js (apenas 2 gráficos serão usados) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <style>
       * {
         font-family: "Inter", sans-serif;
-        transition: color 0.3s ease, background-color 0.3s ease,
-          border-color 0.3s ease, box-shadow 0.3s ease;
+        transition: color 0.25s, background 0.25s, border-color 0.25s,
+          box-shadow 0.25s;
       }
-
       :root {
         --primary: #3b82f6;
         --primary-dark: #2563eb;
-        --secondary: #64748b;
         --accent: #8b5cf6;
         --success: #10b981;
         --warning: #f59e0b;
         --danger: #ef4444;
         --info: #06b6d4;
-
-        /* Light theme */
-        --bg-primary: #ffffff;
+        --secondary: #64748b;
+        --bg-primary: #fff;
         --bg-secondary: #f8fafc;
         --bg-tertiary: #f1f5f9;
         --text-primary: #1e293b;
         --text-secondary: #475569;
         --text-muted: #64748b;
-        --border-color: #e2e8f0;
-        --shadow-light: rgba(0, 0, 0, 0.1);
-        --shadow-medium: rgba(0, 0, 0, 0.15);
-        --shadow-heavy: rgba(0, 0, 0, 0.25);
+        --border: #e2e8f0;
+        --shadow: rgba(0, 0, 0, 0.12);
       }
-
       [data-theme="dark"] {
-        /* Dark theme */
         --bg-primary: #1e293b;
         --bg-secondary: #0f172a;
         --bg-tertiary: #334155;
         --text-primary: #f8fafc;
         --text-secondary: #cbd5e1;
         --text-muted: #94a3b8;
-        --border-color: #334155;
-        --shadow-light: rgba(0, 0, 0, 0.3);
-        --shadow-medium: rgba(0, 0, 0, 0.4);
-        --shadow-heavy: rgba(0, 0, 0, 0.6);
+        --border: #334155;
+        --shadow: rgba(0, 0, 0, 0.38);
       }
-
       body {
         background: linear-gradient(
           135deg,
-          var(--bg-secondary) 0%,
-          var(--bg-tertiary) 100%
+          var(--bg-secondary),
+          var(--bg-tertiary)
         );
         color: var(--text-primary);
         min-height: 100vh;
       }
-
       .card {
         background: var(--bg-primary);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border);
         border-radius: 1rem;
-        box-shadow: 0 10px 25px var(--shadow-light);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 25px var(--shadow);
       }
-
       .card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px var(--shadow-medium);
+        transform: translateY(-4px);
       }
-
       .card-header {
-        background: linear-gradient(
-          135deg,
-          var(--primary) 0%,
-          var(--accent) 100%
-        );
-        color: white;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #fff;
         border-radius: 1rem;
         padding: 2rem;
         text-align: center;
       }
-
       .stats-card {
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border);
         border-radius: 1rem;
-        padding: 1.5rem;
+        padding: 1.2rem;
         text-align: center;
         position: relative;
         overflow: hidden;
+        background: var(--bg-primary);
       }
-
       .stats-card::before {
         content: "";
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
+        inset: 0 0 auto 0;
         height: 4px;
         background: linear-gradient(90deg, var(--primary), var(--accent));
       }
-
       .stats-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1rem;
+        width: 3.1rem;
+        height: 3.1rem;
+        margin: 0 auto 0.7rem;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        color: #fff;
       }
-
       .stats-value {
-        font-size: 2rem;
+        font-size: 1.85rem;
         font-weight: 800;
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
+        min-height: 2.2rem;
       }
-
       .stats-label {
-        font-size: 0.875rem;
-        font-weight: 600;
+        font-size: 0.8rem;
+        font-weight: 700;
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
       }
-
+      .form-input {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 0.75rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+      }
+      .btn {
+        padding: 0.8rem 1rem;
+        border-radius: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        color: #fff;
+      }
+      .btn-ghost {
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+      }
+      .btn-icon {
+        width: 2.9rem;
+        height: 2.9rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 40;
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+      }
+      .list-pills li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 0.65rem;
+        margin-bottom: 0.5rem;
+      }
+      .chip {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #fff;
+        border-radius: 999px;
+        padding: 0.25rem 0.6rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+      }
       .table-modern {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
       }
-
       .table-modern th {
         background: var(--bg-secondary);
         color: var(--text-secondary);
-        font-weight: 700;
         padding: 1rem;
         text-align: left;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 2px solid var(--border);
       }
-
-      .table-modern th:first-child {
-        border-top-left-radius: 0.5rem;
-      }
-
-      .table-modern th:last-child {
-        border-top-right-radius: 0.5rem;
-      }
-
       .table-modern td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
-        color: var(--text-primary);
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--border);
       }
-
-      .table-modern tr:hover td {
-        background: var(--bg-secondary);
-      }
-
-      .form-input {
-        width: 100%;
-        padding: 0.875rem 1rem;
-        border: 2px solid var(--border-color);
-        border-radius: 0.75rem;
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-size: 0.925rem;
-        transition: all 0.3s ease;
-      }
-
-      .form-input:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-      }
-
-      .btn {
-        padding: 0.875rem 2rem;
-        border-radius: 0.75rem;
-        font-weight: 600;
-        font-size: 0.925rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .btn-primary {
-        background: linear-gradient(
-          135deg,
-          var(--primary) 0%,
-          var(--primary-dark) 100%
-        );
-        color: white;
-      }
-
-      .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-      }
-
-      .theme-toggle {
-        position: fixed;
-        top: 2rem;
-        right: 2rem;
-        z-index: 1000;
-        width: 3.5rem;
-        height: 3.5rem;
-        border-radius: 50%;
-        background: var(--bg-primary);
-        border: 2px solid var(--border-color);
-        color: var(--text-primary);
-        cursor: pointer;
+      .pagination {
         display: flex;
+        gap: 0.4rem;
         align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 25px var(--shadow-light);
+        justify-content: flex-end;
+        margin-top: 0.6rem;
       }
-
-      .theme-toggle:hover {
-        transform: scale(1.1);
-        box-shadow: 0 12px 30px var(--shadow-medium);
+      .page-btn {
+        border: 1px solid var(--border);
+        background: var(--bg-primary);
+        padding: 0.45rem 0.7rem;
+        border-radius: 0.6rem;
       }
-
-      .category-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.375rem 0.875rem;
-        border-radius: 2rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        background: linear-gradient(
-          135deg,
-          var(--primary) 0%,
-          var(--accent) 100%
-        );
-        color: white;
-      }
-
-      .nav-button {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 50%;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        color: var(--text-primary);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.125rem;
-        transition: all 0.3s ease;
-      }
-
-      .nav-button:hover:not(:disabled) {
-        background: var(--primary);
-        color: white;
-        transform: scale(1.1);
-      }
-
-      .nav-button:disabled {
-        opacity: 0.4;
+      .page-btn[disabled] {
+        opacity: 0.5;
         cursor: not-allowed;
       }
-
-      .alert {
-        padding: 1rem 1.5rem;
+      /* Drop animado */
+      .collapsible {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.45s ease, opacity 0.45s ease;
+      }
+      .collapsible.open {
+        opacity: 1;
+      }
+      .rotate {
+        transition: transform 0.25s ease;
+      }
+      .rotate.down {
+        transform: rotate(180deg);
+      }
+      /* Spinner do refresh */
+      .spin {
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      /* Skeleton simples */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.06),
+          rgba(255, 255, 255, 0.18),
+          rgba(255, 255, 255, 0.06)
+        );
+        background-size: 200% 100%;
+        animation: shine 1.4s infinite;
+        border-radius: 0.6rem;
+      }
+      @keyframes shine {
+        to {
+          background-position-x: -200%;
+        }
+      }
+      /* ===== Layout horizontal aprimorado com setas ===== */
+      .wrap-scroll {
+        position: relative;
+      }
+      .dias-scroll {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 0.5rem 0.25rem 0.75rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+      }
+      .dias-scroll::-webkit-scrollbar {
+        height: 8px;
+      }
+      .dias-scroll::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 8px;
+      }
+      .dias-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .dia-card {
+        min-width: 220px;
+        flex: 0 0 auto;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
         border-radius: 0.75rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-weight: 500;
+        padding: 1rem;
+        box-shadow: 0 4px 10px var(--shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
-
-      .alert-success {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-        border: 1px solid rgba(16, 185, 129, 0.2);
+      .dia-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px var(--shadow);
       }
-
-      .alert-error {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-      }
-
-      .section-title {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 1.25rem;
+      .dia-card h4 {
         font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .dia-card table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+      .dia-card td {
+        padding: 0.25rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .dia-card tr:last-child td {
+        border-bottom: none;
+      }
+      .dia-card td:last-child {
+        text-align: right;
+        font-weight: 700;
+        color: var(--success);
       }
 
-      .section-title i {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.5rem;
+      /* ===== Setas laterais ===== */
+      .scroll-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 50%;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        box-shadow: 0 4px 10px var(--shadow);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1rem;
+        cursor: pointer;
+        opacity: 0.85;
+        transition: all 0.3s ease;
+        z-index: 5;
+      }
+      .scroll-arrow:hover {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.05);
+      }
+      .scroll-arrow.left {
+        left: -0.8rem;
+      }
+      .scroll-arrow.right {
+        right: -0.8rem;
       }
 
-      .fade-in {
-        animation: fadeIn 0.6s ease-out;
+      /* Sombras de gradiente laterais */
+      .scroll-shadow-left,
+      .scroll-shadow-right {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2.5rem;
+        pointer-events: none;
+        z-index: 2;
+        transition: opacity 0.3s ease;
       }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      .scroll-shadow-left {
+        left: 0;
+        background: linear-gradient(
+          to right,
+          var(--bg-primary) 40%,
+          transparent
+        );
       }
-
-      .pulse {
-        animation: pulse 2s infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.8;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .theme-toggle {
-          top: 1rem;
-          right: 1rem;
-          width: 3rem;
-          height: 3rem;
-          font-size: 1rem;
-        }
-
-        .stats-value {
-          font-size: 1.5rem;
-        }
-
-        .card-header {
-          padding: 1.5rem;
-        }
-
-        .stats-icon {
-          width: 3rem;
-          height: 3rem;
-          font-size: 1.25rem;
-        }
+      .scroll-shadow-right {
+        right: 0;
+        background: linear-gradient(
+          to left,
+          var(--bg-primary) 40%,
+          transparent
+        );
       }
     </style>
   </head>
+  <!-- ==========================
+===== PARTE 2: BODY UI ========
+=========================== -->
   <body>
-    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
-      <i class="fas fa-moon" id="theme-icon"></i>
+    <!-- Toggle tema -->
+    <button
+      id="toggleTheme"
+      class="theme-toggle btn-icon"
+      title="Alternar tema"
+    >
+      <i id="themeIcon" class="fas fa-moon"></i>
     </button>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
       <!-- Header -->
-      <div class="text-center mb-10 fade-in">
+      <div class="text-center mb-8">
         <div class="card card-header">
-          <div
-            class="flex flex-col items-center justify-center mb-4 md:flex-row"
-          >
+          <div class="flex flex-col md:flex-row items-center justify-center">
             <div
-              class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-6"
+              class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center md:mr-6 mb-4 md:mb-0"
             >
               <i class="fas fa-chart-bar text-3xl"></i>
             </div>
             <div>
-              <h1 class="text-3xl md:text-4xl font-bold mb-3">
-                Dashboard de Vendas
+              <h1 class="text-3xl md:text-4xl font-extrabold mb-1">
+                Dashboard de Vendas 2.0 — Valores
               </h1>
-              <p class="text-base md:text-xl opacity-90">
-                Acompanhe o desempenho das vendas por período, categoria e
-                pagamento
+              <p class="text-sm md:text-base opacity-95">
+                KPIs e resumos por pagamento, categoria e dia — com 2 gráficos
+                essenciais
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Filtro por data -->
-      <div class="card p-6 mb-8 fade-in">
+      <!-- Filtros -->
+      <div class="card p-6 mb-6">
         <form
           id="filtroForm"
-          class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end"
+          class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
         >
           <div>
             <label
-              class="block text-sm font-semibold mb-3"
+              class="block text-sm font-bold mb-2"
               style="color: var(--text-secondary)"
+              ><i class="fas fa-calendar-alt mr-2"></i>Data Inicial</label
             >
-              <i class="fas fa-calendar-alt mr-2"></i>Data Inicial
-            </label>
             <input type="date" id="dataInicio" class="form-input" required />
           </div>
           <div>
             <label
-              class="block text-sm font-semibold mb-3"
+              class="block text-sm font-bold mb-2"
               style="color: var(--text-secondary)"
+              ><i class="fas fa-calendar-alt mr-2"></i>Data Final</label
             >
-              <i class="fas fa-calendar-alt mr-2"></i>Data Final
-            </label>
             <input type="date" id="dataFim" class="form-input" required />
           </div>
           <div>
+            <label
+              class="block text-sm font-bold mb-2"
+              style="color: var(--text-secondary)"
+              ><i class="fas fa-search mr-2"></i>Buscar
+              (produto/categoria)</label
+            >
+            <input
+              type="text"
+              id="buscaTabela"
+              class="form-input"
+              placeholder="Ex.: anel, brinquedos, pix..."
+            />
+          </div>
+          <div class="flex items-end gap-2">
             <button type="submit" class="btn btn-primary w-full">
-              <i class="fas fa-search"></i>
-              Buscar Relatório
+              <i class="fas fa-search"></i> Buscar
+            </button>
+            <button
+              id="btnRefreshDia"
+              type="button"
+              class="btn-icon"
+              title="Atualizar dados do dia selecionado"
+            >
+              <i id="iconRefresh" class="fas fa-rotate-right"></i>
             </button>
           </div>
         </form>
+        <div
+          id="msg"
+          class="mt-3 text-sm"
+          style="color: var(--text-muted)"
+        ></div>
       </div>
 
-      <!-- Cards de resumo -->
-      <div id="resumoCards" class="grid md:grid-cols-3 gap-6 mb-8"></div>
-
-      <!-- Gráficos e tabelas -->
-      <div class="grid lg:grid-cols-2 gap-8 mb-8">
-        <div class="card p-6 fade-in">
-          <h2 class="section-title">
-            <i
-              class="fas fa-credit-card"
-              style="
-                background: linear-gradient(135deg, #10b981, #06b6d4);
-                color: white;
-              "
-            ></i>
-            Vendas por Tipo de Pagamento
-          </h2>
-          <div id="graficoPagamentos" class="min-h-[250px]"></div>
+      <!-- KPIs -->
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="stats-card card">
+          <div
+            class="stats-icon"
+            style="background: linear-gradient(135deg, #10b981, #059669)"
+          >
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div id="kpiQtd" class="stats-value">–</div>
+          <div class="stats-label">Total de Vendas</div>
         </div>
-        <div class="card p-6 fade-in">
-          <h2 class="section-title">
-            <i
-              class="fas fa-tags"
-              style="
-                background: linear-gradient(135deg, #8b5cf6, #ec4899);
-                color: white;
-              "
-            ></i>
-            Vendas por Categoria
-          </h2>
-          <div id="graficoCategorias" class="min-h-[250px]"></div>
+        <div class="stats-card card">
+          <div
+            class="stats-icon"
+            style="background: linear-gradient(135deg, #3b82f6, #2563eb)"
+          >
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <div id="kpiTotal" class="stats-value">–</div>
+          <div class="stats-label">Valor Total</div>
         </div>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-8 mb-8">
-        <div class="card p-6 fade-in">
-          <h2 class="section-title">
-            <i
-              class="fas fa-calendar-day"
-              style="
-                background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-                color: white;
-              "
-            ></i>
-            Vendas por Dia
-          </h2>
-          <div id="graficoVendasDia" class="min-h-[250px]"></div>
-        </div>
-        <div class="card p-6 fade-in">
-          <h2 class="section-title">
-            <i
-              class="fas fa-box"
-              style="
-                background: linear-gradient(135deg, #f59e0b, #f97316);
-                color: white;
-              "
-            ></i>
-            Produtos Mais Vendidos
-          </h2>
-          <div id="tabelaProdutos" class="min-h-[250px]"></div>
+        <div class="stats-card card">
+          <div
+            class="stats-icon"
+            style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+          >
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <div id="kpiTicket" class="stats-value">–</div>
+          <div class="stats-label">Ticket Médio</div>
         </div>
       </div>
 
-      <!-- Nova tabela: Produtos Mais Vendidos por Dia -->
-      <div class="card p-6 fade-in">
-        <h2 class="section-title">
-          <i
-            class="fas fa-calendar-check"
-            style="
-              background: linear-gradient(135deg, #06b6d4, #3b82f6);
-              color: white;
-            "
-          ></i>
-          Produtos Mais Vendidos por Dia
-        </h2>
-        <div id="tabelaProdutosPorDia" class="min-h-[250px]"></div>
-      </div>
-      <!-- Nova seção: Total por Vendas -->
-      <div class="card p-6 fade-in mt-8">
-        <h2 class="section-title">
-          <i
-            class="fas fa-list"
-            style="
-              background: linear-gradient(135deg, #06b6d4, #10b981);
-              color: white;
-            "
-          ></i>
-          Total por Vendas
-        </h2>
-        <div id="tabelaVendasDetalhadas" class="min-h-[250px]"></div>
+      <!-- Cards de valores -->
+      <div class="grid lg:grid-cols-2 gap-6 mb-6">
+        <!-- Pagamento (valores) -->
+        <div class="card p-6">
+          <h2 class="section-title">
+            <i class="fas fa-credit-card chip"></i>
+            Vendas por Tipo de Pagamento (Valores)
+          </h2>
+          <ul id="listaPagamentos" class="list-pills">
+            <!-- preenchido via JS -->
+          </ul>
+        </div>
+
+        <!-- Categoria (valores) -->
+        <div class="card p-6">
+          <h2 class="section-title">
+            <i class="fas fa-tags chip"></i>
+            Vendas por Categoria (Valores)
+          </h2>
+          <ul id="listaCategorias" class="list-pills">
+            <!-- preenchido via JS -->
+          </ul>
+        </div>
       </div>
 
-      <script>
-        // Função auxiliar para obter todas as datas no intervalo
-        function obterDatasNoIntervalo(dataInicio, dataFim) {
-          const datas = [];
-          let atual = new Date(dataInicio);
-          const fim = new Date(dataFim);
-          while (atual <= fim) {
-            const yyyy = atual.getFullYear();
-            const mm = String(atual.getMonth() + 1).padStart(2, "0");
-            const dd = String(atual.getDate()).padStart(2, "0");
-            datas.push(`${yyyy}-${mm}-${dd}`);
-            atual.setDate(atual.getDate() + 1);
-          }
-          return datas;
+      <div class="grid lg:grid-cols-2 gap-6 mb-6">
+        <!-- Dia selecionado -->
+        <div class="card p-6">
+          <h2 class="section-title">
+            <i class="fas fa-calendar-day chip"></i>
+            Vendas do Dia (Selecionado)
+          </h2>
+          <div id="cardDiaConteudo">
+            <div class="skeleton h-20 w-full"></div>
+          </div>
+        </div>
+
+        <!-- Top produtos (valores por quantidade) -->
+        <div class="card p-6">
+          <h2 class="section-title">
+            <i class="fas fa-box chip"></i>
+            Produtos Mais Vendidos (Top 10)
+          </h2>
+          <ul id="listaTopProdutos" class="list-pills">
+            <!-- preenchido via JS -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Gráficos (apenas 2) -->
+      <div class="grid lg:grid-cols-2 gap-6 mb-6">
+        <div class="card p-6">
+          <h2 class="section-title">
+            <i class="fas fa-chart-pie chip"></i>
+            💳 Vendas por Tipo de Pagamento (Gráfico)
+          </h2>
+          <canvas id="chartPag" height="170"></canvas>
+        </div>
+        <div class="card p-6">
+          <h2 class="section-title">
+            <i class="fas fa-chart-pie chip"></i>
+            🏷️ Vendas por Categoria (Gráfico)
+          </h2>
+          <canvas id="chartCat" height="170"></canvas>
+        </div>
+      </div>
+
+      <!-- Drop animado: Produtos Mais Vendidos por Dia -->
+      <div class="card p-6 mb-6">
+        <div class="flex items-center justify-between">
+          <h2 class="section-title">
+            <i class="fas fa-calendar-check chip"></i>
+            Produtos Mais Vendidos por Dia (Drop)
+          </h2>
+          <button id="btnToggleDrop" class="btn-ghost btn">
+            <span class="mr-1">Mostrar</span>
+            <i id="arrowDrop" class="fas fa-chevron-down rotate"></i>
+          </button>
+        </div>
+        <div id="dropConteudo" class="collapsible">
+          <div id="conteudoProdutosPorDia" class="mt-4">
+            <!-- preenchido via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela detalhada -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="section-title">
+            <i class="fas fa-list chip"></i>
+            Total por Vendas
+          </h2>
+          <div class="flex items-center gap-2">
+            <input
+              type="text"
+              id="buscaTabelaTop"
+              class="form-input"
+              placeholder="Filtrar tabela"
+            />
+            <button
+              id="exportarCSV"
+              class="btn"
+              style="border: 1px solid var(--border)"
+            >
+              <i class="fas fa-file-csv"></i> EXCSV
+            </button>
+          </div>
+        </div>
+        <div id="tabelaWrap" class="min-h-[220px]">
+          <div class="skeleton h-24 w-full mb-2"></div>
+          <div class="skeleton h-24 w-full mb-2"></div>
+        </div>
+        <div class="pagination">
+          <button class="page-btn" id="prevPg">&laquo; Anterior</button>
+          <span
+            id="pgInfo"
+            class="text-sm"
+            style="color: var(--text-muted)"
+          ></span>
+          <button class="page-btn" id="nextPg">Próximo &raquo;</button>
+        </div>
+      </div>
+    </div>
+    <!-- ===========================
+===== PARTE 3: SCRIPTS =========
+============================ -->
+    <script type="module">
+      import { WEBAPP_URL } from "./conexao.js";
+
+      // ===== Tema
+      const themeBtn = document.getElementById("toggleTheme");
+      const themeIcon = document.getElementById("themeIcon");
+      function applyTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        localStorage.setItem("theme", t);
+        themeIcon.className = t === "dark" ? "fas fa-sun" : "fas fa-moon";
+      }
+      (() => {
+        const preferDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        applyTheme(
+          localStorage.getItem("theme") || (preferDark ? "dark" : "light")
+        );
+      })();
+      themeBtn.addEventListener("click", () => {
+        const cur = document.documentElement.getAttribute("data-theme");
+        applyTheme(cur === "dark" ? "light" : "dark");
+      });
+
+      // ===== Helpers
+      const BRL = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+      const msg = (t) => (document.getElementById("msg").textContent = t || "");
+      const hojeISO = () => {
+        const d = new Date();
+        return [
+          d.getFullYear(),
+          String(d.getMonth() + 1).padStart(2, "0"),
+          String(d.getDate()).padStart(2, "0"),
+        ].join("-");
+      };
+      function datasNoIntervalo(di, df) {
+        const out = [],
+          cur = new Date(di),
+          end = new Date(df);
+        while (cur <= end) {
+          out.push(cur.toISOString().slice(0, 10));
+          cur.setDate(cur.getDate() + 1);
         }
-
-        // Busca todas as vendas detalhadas no período
-        async function buscarVendasDetalhadas(dataInicio, dataFim) {
-          const webAppUrl = WEBAPP_URL;
-          const datas = obterDatasNoIntervalo(dataInicio, dataFim);
-          let todasVendas = [];
-
-          for (const data of datas) {
-            try {
-              const resp = await fetch(
-                `${webAppUrl}?action=carregarVendas&data=${data}`
-              );
-              const json = await resp.json();
-              if (json.success && json.vendas.length) {
-                todasVendas = todasVendas.concat(json.vendas);
-              }
-            } catch (error) {
-              console.error("Erro ao carregar vendas de", data, error);
-            }
-          }
-
-          renderTabelaVendasDetalhadas(todasVendas);
+        return out;
+      }
+      function animateNumber(el, end, format = (x) => x.toString(), dur = 650) {
+        const start = 0,
+          t0 = performance.now();
+        function step(t) {
+          const p = Math.min((t - t0) / dur, 1);
+          el.textContent = format(start + (end - start) * p);
+          if (p < 1) requestAnimationFrame(step);
         }
+        requestAnimationFrame(step);
+      }
 
-        // Renderiza tabela de vendas detalhadas
-        function renderTabelaVendasDetalhadas(vendas) {
-          const container = document.getElementById("tabelaVendasDetalhadas");
-          if (!vendas || vendas.length === 0) {
-            container.innerHTML = `
-              <div class="text-center py-8" style="color: var(--text-muted);">
-                <i class="fas fa-inbox text-4xl mb-4"></i>
-                <p>Nenhuma venda encontrada no período selecionado.</p>
-              </div>`;
-            return;
-          }
+      // ===== Estado
+      let vendasDetalhadas = [];
+      let pagina = 1,
+        porPagina = 20,
+        filtroTexto = "";
 
-          // Ordena por data mais recente
-          vendas.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      // ===== Backend
+      async function carregarVendasDia(data) {
+        const params = new URLSearchParams({ action: "carregarVendas", data });
+        const r = await fetch(`${WEBAPP_URL}?${params}`, {
+          method: "GET",
+          mode: "cors",
+        });
+        if (!r.ok) throw new Error("Erro carregarVendas: " + r.status);
+        return await r.json();
+      }
+      async function carregarVendasIntervalo(di, df) {
+        const dias = datasNoIntervalo(di, df);
+        const resps = await Promise.all(
+          dias.map((d) =>
+            carregarVendasDia(d).catch(() => ({ success: false, vendas: [] }))
+          )
+        );
+        const todas = [];
+        resps.forEach((j) => {
+          if (j?.success && Array.isArray(j.vendas)) todas.push(...j.vendas);
+        });
+        return todas.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+      }
 
-          container.innerHTML = `
+      // ===== Agregações
+      function agregaDosDetalhes(vendas) {
+        const totalVendas = vendas.length;
+        const valorTotal = vendas.reduce(
+          (s, v) => s + (parseFloat(v.valor) || 0),
+          0
+        );
+        const ticketMedio = totalVendas ? valorTotal / totalVendas : 0;
+
+        const formasPagamento = {},
+          categorias = {},
+          vendasPorDia = {},
+          topCount = {},
+          produtosPorDia = {};
+
+        vendas.forEach((v) => {
+          const val = parseFloat(v.valor) || 0;
+          const d =
+            typeof v.data === "string"
+              ? v.data
+              : new Date(v.data).toISOString().slice(0, 10);
+          formasPagamento[v.pagamento] =
+            (formasPagamento[v.pagamento] || 0) + val;
+          categorias[v.categoria] = (categorias[v.categoria] || 0) + val;
+          vendasPorDia[d] = vendasPorDia[d] || { qtd: 0, total: 0 };
+          vendasPorDia[d].qtd++;
+          vendasPorDia[d].total += val;
+          topCount[v.produto] = (topCount[v.produto] || 0) + 1;
+          produtosPorDia[d] ??= {};
+          produtosPorDia[d][v.produto] =
+            (produtosPorDia[d][v.produto] || 0) + 1;
+        });
+
+        const produtosMaisVendidos = Object.entries(topCount)
+          .map(([produto, quantidade]) => ({ produto, quantidade }))
+          .sort((a, b) => b.quantidade - a.quantidade)
+          .slice(0, 10);
+
+        const produtosPorDiaFmt = {};
+        Object.entries(produtosPorDia).forEach(([data, map]) => {
+          produtosPorDiaFmt[data] = Object.entries(map)
+            .map(([produto, quantidade]) => ({ produto, quantidade }))
+            .sort((a, b) => b.quantidade - a.quantidade);
+        });
+
+        return {
+          totalVendas,
+          valorTotal,
+          ticketMedio,
+          formasPagamento,
+          categorias,
+          vendasPorDia,
+          produtosMaisVendidos,
+          produtosPorDia: produtosPorDiaFmt,
+        };
+      }
+
+      // ===== Render KPIs
+      function renderKPIs(agg) {
+        animateNumber(document.getElementById("kpiQtd"), agg.totalVendas, (x) =>
+          Math.round(x).toString()
+        );
+        animateNumber(
+          document.getElementById("kpiTotal"),
+          agg.valorTotal,
+          (x) => BRL.format(x)
+        );
+        animateNumber(
+          document.getElementById("kpiTicket"),
+          agg.ticketMedio,
+          (x) => BRL.format(x)
+        );
+      }
+
+      // ===== Render Cards e Tabelas
+      function renderListaValores(obj, ulId) {
+        const ul = document.getElementById(ulId);
+        if (!obj || !Object.keys(obj).length) {
+          ul.innerHTML = `<li><span class="text-sm" style="color:var(--text-muted)">Sem dados para o período</span></li>`;
+          return;
+        }
+        const itens = Object.entries(obj)
+          .sort((a, b) => b[1] - a[1])
+          .map(
+            ([k, v]) => `
+              <li>
+                <span class="font-semibold">${k || "—"}</span>
+                <span class="font-extrabold" style="color:var(--success)">${BRL.format(
+                  v
+                )}</span>
+              </li>`
+          )
+          .join("");
+        ul.innerHTML = itens;
+      }
+
+      // ✅ NOVO: tabela de dias selecionados
+      function renderTabelaDiasSelecionados(vendasPorDia) {
+        const div = document.getElementById("cardDiaConteudo");
+        const dias = Object.keys(vendasPorDia || {}).sort(
+          (a, b) => new Date(a) - new Date(b)
+        );
+        if (!dias.length) {
+          div.innerHTML = `<p class="text-sm" style="color:var(--text-muted)">Sem vendas neste período.</p>`;
+          return;
+        }
+        const linhas = dias
+          .map(
+            (d) => `
+            <tr>
+              <td class="py-2">${new Date(d).toLocaleDateString("pt-BR")}</td>
+              <td class="py-2 text-center font-bold">${vendasPorDia[d].qtd}</td>
+              <td class="py-2 text-right font-extrabold" style="color:var(--success)">${BRL.format(
+                vendasPorDia[d].total
+              )}</td>
+            </tr>`
+          )
+          .join("");
+        div.innerHTML = `
             <div class="overflow-x-auto">
               <table class="table-modern">
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th>Produto</th>
-                    <th>Categoria</th>
-                    <th>Pagamento</th>
-                    <th>Valor</th>
-                    <th>Data</th>
+                    <th>DIA</th>
+                    <th class="text-center">Itens Vendidos</th>
+                    <th class="text-right">Valor Total</th>
                   </tr>
                 </thead>
-                <tbody>
-                  ${vendas
-                    .map(
-                      (v) => `
-                      <tr>
-                        <td>${v.item}</td>
-                        <td>${v.produto}</td>
-                        <td>${v.categoria}</td>
-                        <td>${v.pagamento}</td>
-                        <td>R$ ${parseFloat(v.valor).toFixed(2)}</td>
-                        <td>${v.data}</td>
-                      </tr>`
-                    )
-                    .join("")}
-                </tbody>
+                <tbody>${linhas}</tbody>
               </table>
             </div>`;
-        }
-
-        // Integra com o filtro já existente
-        document
-          .getElementById("filtroForm")
-          .addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const dataInicio = document.getElementById("dataInicio").value;
-            const dataFim = document.getElementById("dataFim").value;
-
-            await buscarVendasDetalhadas(dataInicio, dataFim);
-          });
-
-        // Também carrega as vendas do dia atual ao iniciar
-        window.addEventListener("DOMContentLoaded", async () => {
-          const hoje = new Date();
-          const yyyy = hoje.getFullYear();
-          const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-          const dd = String(hoje.getDate()).padStart(2, "0");
-          const dataHoje = `${yyyy}-${mm}-${dd}`;
-          await buscarVendasDetalhadas(dataHoje, dataHoje);
-        });
-      </script>
-    </div>
-
-    <script type="module">
-      // Theme toggle functionality
-      function toggleTheme() {
-        const currentTheme =
-          document.documentElement.getAttribute("data-theme");
-        const newTheme = currentTheme === "dark" ? "light" : "dark";
-
-        document.documentElement.setAttribute("data-theme", newTheme);
-        localStorage.setItem("theme", newTheme);
-
-        const themeIcon = document.getElementById("theme-icon");
-        themeIcon.className =
-          newTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
       }
 
-      // Initialize theme
-      function initTheme() {
-        const savedTheme = localStorage.getItem("theme") || "light";
-        document.documentElement.setAttribute("data-theme", savedTheme);
-
-        const themeIcon = document.getElementById("theme-icon");
-        themeIcon.className =
-          savedTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
-      }
-
-      // Make toggleTheme available globally
-      window.toggleTheme = toggleTheme;
-
-      // Initialize theme on load
-      initTheme();
-
-      import { WEBAPP_URL } from "./conexao.js";
-
-      // Função para mostrar mensagens de erro no dashboard
-      function mostrarErroDashboard(msg) {
-        let erroDiv = document.getElementById("msgErroDashboard");
-        if (!erroDiv) {
-          erroDiv = document.createElement("div");
-          erroDiv.id = "msgErroDashboard";
-          erroDiv.className = "alert alert-error";
-          document.body.prepend(erroDiv);
+      function renderTopProdutos(lista) {
+        const ul = document.getElementById("listaTopProdutos");
+        if (!lista?.length) {
+          ul.innerHTML = `<li><span class="text-sm" style="color:var(--text-muted)">Sem vendas no período</span></li>`;
+          return;
         }
-        erroDiv.innerHTML = `
-                <i class='fas fa-exclamation-triangle'></i>
-                <span><strong>Erro:</strong> ${msg}</span>
-            `;
-        setTimeout(() => {
-          erroDiv.remove();
-        }, 10000);
-      }
-
-      // Função para mostrar mensagens de sucesso centralizadas
-      function mostrarSucessoDashboard(msg) {
-        let msgDiv = document.getElementById("msgSucessoConexao");
-        if (!msgDiv) {
-          msgDiv = document.createElement("div");
-          msgDiv.id = "msgSucessoConexao";
-          msgDiv.className = "alert alert-success max-w-2xl mx-auto";
-
-          // Posiciona logo abaixo do header
-          const header = document.querySelector(".text-center.mb-10");
-          if (header && header.parentNode) {
-            header.parentNode.insertBefore(msgDiv, header.nextSibling);
-          } else {
-            document.body.prepend(msgDiv);
-          }
-        }
-        msgDiv.innerHTML = `
-                <i class='fas fa-check-circle'></i>
-                <span><strong>${msg}</strong></span>
-            `;
-        setTimeout(() => {
-          msgDiv.remove();
-        }, 8000);
-      }
-
-      // Função para buscar estatísticas no backend
-      async function buscarEstatisticas(dataInicio, dataFim) {
-        const webAppUrl = WEBAPP_URL;
-        if (!webAppUrl) {
-          mostrarErroDashboard("URL do backend não configurada!");
-          return null;
-        }
-        const params = new URLSearchParams({
-          action: "obterEstatisticas",
-          dataInicio,
-          dataFim,
-        });
-        try {
-          const response = await fetch(`${webAppUrl}?${params}`, {
-            method: "GET",
-            mode: "cors",
-          });
-          if (!response.ok)
-            throw new Error("Erro ao buscar estatísticas: " + response.status);
-          return await response.json();
-        } catch (error) {
-          mostrarErroDashboard("Erro ao buscar estatísticas: " + error.message);
-          return null;
-        }
-      }
-
-      // Renderização dos cards de resumo
-      function renderResumo(estatisticas) {
-        const cards = [
-          {
-            icon: "fa-shopping-cart",
-            label: "Total de Vendas",
-            value: estatisticas.totalVendas,
-            color: "background: linear-gradient(135deg, #10b981, #059669);",
-          },
-          {
-            icon: "fa-money-bill-wave",
-            label: "Valor Total",
-            value: `R$ ${estatisticas.valorTotal.toLocaleString("pt-BR", {
-              minimumFractionDigits: 2,
-            })}`,
-            color: "background: linear-gradient(135deg, #3b82f6, #2563eb);",
-          },
-          {
-            icon: "fa-ticket-alt",
-            label: "Ticket Médio",
-            value: `R$ ${estatisticas.ticketMedio.toLocaleString("pt-BR", {
-              minimumFractionDigits: 2,
-            })}`,
-            color: "background: linear-gradient(135deg, #f59e0b, #d97706);",
-          },
-        ];
-
-        document.getElementById("resumoCards").innerHTML = cards
+        ul.innerHTML = lista
           .map(
-            (card) => `
-                    <div class="stats-card card fade-in">
-                        <div class="stats-icon" style="${card.color} color: white;">
-                            <i class="fas ${card.icon}"></i>
-                        </div>
-                        <div class="stats-value">${card.value}</div>
-                        <div class="stats-label">${card.label}</div>
-                    </div>
-                `
+            (p) => `
+            <li>
+              <span class="font-semibold">${p.produto || "—"}</span>
+              <span class="chip">${p.quantidade}</span>
+            </li>`
           )
           .join("");
       }
 
-      // Renderização dos gráficos/tabelas
-      function renderGraficoVendasDia(vendasPorDia) {
-        const container = document.getElementById("graficoVendasDia");
-        if (!vendasPorDia || Object.keys(vendasPorDia).length === 0) {
-          container.innerHTML = `
-                    <div class="text-center py-8" style="color: var(--text-muted);">
-                        <i class="fas fa-chart-line text-4xl mb-4"></i>
-                        <p>Nenhum dado encontrado para o período selecionado</p>
-                    </div>
-                `;
-          return;
-        }
-
-        container.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-calendar mr-2"></i>Data</th>
-                                <th><i class="fas fa-shopping-cart mr-2"></i>Vendas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.entries(vendasPorDia)
-                              .map(
-                                ([data, qtd]) => `
-                                    <tr>
-                                        <td class="font-medium">${new Date(
-                                          data
-                                        ).toLocaleDateString("pt-BR")}</td>
-                                        <td>
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;">
-                                                ${qtd}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `
-                              )
-                              .join("")}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+      // ===== Gráficos
+      let chartPag, chartCat;
+      function resetChart(c) {
+        if (c) c.destroy();
       }
-
-      function renderGraficoCategorias(categorias) {
-        const container = document.getElementById("graficoCategorias");
-        if (!categorias || Object.keys(categorias).length === 0) {
-          container.innerHTML = `
-                    <div class="text-center py-8" style="color: var(--text-muted);">
-                        <i class="fas fa-tags text-4xl mb-4"></i>
-                        <p>Nenhuma categoria encontrada</p>
-                    </div>
-                `;
-          return;
-        }
-
-        container.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-tag mr-2"></i>Categoria</th>
-                                <th><i class="fas fa-dollar-sign mr-2"></i>Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.entries(categorias)
-                              .map(
-                                ([cat, val]) => `
-                                    <tr>
-                                        <td>
-                                            <span class="category-badge">
-                                                <i class="fas fa-tag"></i>
-                                                ${cat}
-                                            </span>
-                                        </td>
-                                        <td class="font-semibold" style="color: var(--success);">
-                                            R$ ${val.toLocaleString("pt-BR", {
-                                              minimumFractionDigits: 2,
-                                            })}
-                                        </td>
-                                    </tr>
-                                `
-                              )
-                              .join("")}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-      }
-
-      function renderGraficoPagamentos(pagamentos) {
-        const container = document.getElementById("graficoPagamentos");
-        if (!pagamentos || Object.keys(pagamentos).length === 0) {
-          container.innerHTML = `
-                    <div class="text-center py-8" style="color: var(--text-muted);">
-                        <i class="fas fa-credit-card text-4xl mb-4"></i>
-                        <p>Nenhum método de pagamento encontrado</p>
-                    </div>
-                `;
-          return;
-        }
-
-        container.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-credit-card mr-2"></i>Tipo de Pagamento</th>
-                                <th><i class="fas fa-dollar-sign mr-2"></i>Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.entries(pagamentos)
-                              .map(
-                                ([tipo, val]) => `
-                                    <tr>
-                                        <td class="font-medium">
-                                            <i class="fas fa-credit-card mr-2" style="color: var(--primary);"></i>
-                                            ${tipo}
-                                        </td>
-                                        <td class="font-semibold" style="color: var(--success);">
-                                            R$ ${val.toLocaleString("pt-BR", {
-                                              minimumFractionDigits: 2,
-                                            })}
-                                        </td>
-                                    </tr>
-                                `
-                              )
-                              .join("")}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-      }
-
-      function renderTabelaProdutos(produtos) {
-        const container = document.getElementById("tabelaProdutos");
-        if (!produtos || produtos.length === 0) {
-          container.innerHTML = `
-                    <div class="text-center py-8" style="color: var(--text-muted);">
-                        <i class="fas fa-box text-4xl mb-4"></i>
-                        <p>Nenhum produto encontrado</p>
-                    </div>
-                `;
-          return;
-        }
-
-        container.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-box mr-2"></i>Produto</th>
-                                <th><i class="fas fa-hashtag mr-2"></i>Quantidade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${produtos
-                              .map(
-                                (prod) => `
-                                    <tr>
-                                        <td class="font-medium">${prod.produto}</td>
-                                        <td>
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, var(--success), #059669); color: white;">
-                                                ${prod.quantidade}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `
-                              )
-                              .join("")}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-      }
-
-      // Controle de navegação dos dias
-      let diasProdutos = [];
-      let diaAtualIndex = 0;
-
-      function renderTabelaProdutosPorDia(produtosPorDia) {
-        const container = document.getElementById("tabelaProdutosPorDia");
-        diasProdutos = Object.keys(produtosPorDia).sort(
-          (a, b) => new Date(a) - new Date(b)
-        );
-
-        if (diasProdutos.length === 0) {
-          container.innerHTML = `
-                    <div class="text-center py-8" style="color: var(--text-muted);">
-                        <i class="fas fa-calendar-times text-4xl mb-4"></i>
-                        <p>Nenhum produto por dia encontrado</p>
-                    </div>
-                `;
-          return;
-        }
-
-        // Mostra o último dia por padrão
-        if (diaAtualIndex < 0 || diaAtualIndex >= diasProdutos.length) {
-          diaAtualIndex = diasProdutos.length - 1;
-        }
-
-        const data = diasProdutos[diaAtualIndex];
-        const produtos = produtosPorDia[data] || [];
-
-        container.innerHTML = `
-                <div class="flex items-center justify-between mb-6 p-4 rounded-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-color);">
-                    <button id="btnDiaAnterior" class="nav-button" ${
-                      diaAtualIndex === 0 ? "disabled" : ""
-                    } title="Dia anterior">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="text-center">
-                        <h3 class="font-bold text-xl" style="color: var(--primary);">
-                            <i class="fas fa-calendar-day mr-2"></i>
-                            ${new Date(data).toLocaleDateString("pt-BR")}
-                        </h3>
-                        <p class="text-sm" style="color: var(--text-muted);">
-                            ${diaAtualIndex + 1} de ${diasProdutos.length} dias
-                        </p>
-                    </div>
-                    <button id="btnDiaProximo" class="nav-button" ${
-                      diaAtualIndex === diasProdutos.length - 1
-                        ? "disabled"
-                        : ""
-                    } title="Próximo dia">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="table-modern">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-box mr-2"></i>Produto</th>
-                                <th><i class="fas fa-hashtag mr-2"></i>Quantidade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${
-                              produtos.length > 0
-                                ? produtos
-                                    .map(
-                                      (prod) => `
-                                    <tr>
-                                        <td class="font-medium">${prod.produto}</td>
-                                        <td>
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style="background: linear-gradient(135deg, var(--success), #059669); color: white;">
-                                                ${prod.quantidade}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `
-                                    )
-                                    .join("")
-                                : `
-                                <tr>
-                                    <td colspan="2" class="text-center py-8" style="color: var(--text-muted);">
-                                        <i class="fas fa-inbox text-3xl mb-2 block"></i>
-                                        Nenhum produto vendido neste dia
-                                    </td>
-                                </tr>
-                            `
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-        // Eventos das setas
-        document.getElementById("btnDiaAnterior").onclick = function () {
-          if (diaAtualIndex > 0) {
-            diaAtualIndex--;
-            renderTabelaProdutosPorDia(produtosPorDia);
-          }
-        };
-
-        document.getElementById("btnDiaProximo").onclick = function () {
-          if (diaAtualIndex < diasProdutos.length - 1) {
-            diaAtualIndex++;
-            renderTabelaProdutosPorDia(produtosPorDia);
-          }
-        };
-      }
-
-      // Função para buscar o dia atual e inicializar o dashboard
-      async function inicializarDashboardComDiaAtual() {
-        const hoje = new Date();
-        const yyyy = hoje.getFullYear();
-        const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-        const dd = String(hoje.getDate()).padStart(2, "0");
-        const dataHoje = `${yyyy}-${mm}-${dd}`;
-
-        document.getElementById("dataInicio").value = dataHoje;
-        document.getElementById("dataFim").value = dataHoje;
-
-        const resultDia = await buscarEstatisticas(dataHoje, dataHoje);
-        if (!resultDia || !resultDia.success) return;
-
-        mostrarSucessoDashboard(
-          "Sistema inicializado com sucesso! Conexão estabelecida com o Google Sheets."
-        );
-
-        const est = resultDia.estatisticas;
-        renderResumo(est);
-        renderGraficoVendasDia(est.vendasPorDia || {});
-        renderGraficoCategorias(est.categorias || {});
-        renderGraficoPagamentos(est.formasPagamento || {});
-        renderTabelaProdutos(est.produtosMaisVendidos || []);
-
-        // Inicializa navegação de Produtos Mais Vendidos por Dia no dia atual
-        if (est.produtosPorDia && Object.keys(est.produtosPorDia).length > 0) {
-          const dias = Object.keys(est.produtosPorDia).sort(
-            (a, b) => new Date(a) - new Date(b)
-          );
-          let indexHoje = dias.findIndex((d) => d === dataHoje);
-          if (indexHoje === -1) indexHoje = dias.length - 1;
-          diaAtualIndex = indexHoje;
-          renderTabelaProdutosPorDia(est.produtosPorDia);
-        } else {
-          renderTabelaProdutosPorDia({});
-        }
-      }
-
-      // Evento do filtro
-      document
-        .getElementById("filtroForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-          const dataInicio = document.getElementById("dataInicio").value;
-          const dataFim = document.getElementById("dataFim").value;
-
-          if (!dataInicio || !dataFim) {
-            mostrarErroDashboard("Preencha as datas inicial e final.");
-            return;
-          }
-
-          const result = await buscarEstatisticas(dataInicio, dataFim);
-          if (!result) return;
-
-          if (!result.success) {
-            mostrarErroDashboard(
-              result.message || "Nenhum dado retornado do backend."
-            );
-            return;
-          }
-
-          mostrarSucessoDashboard("Relatório atualizado com sucesso!");
-
-          const est = result.estatisticas;
-          renderResumo(est);
-          renderGraficoVendasDia(est.vendasPorDia || {});
-          renderGraficoCategorias(est.categorias || {});
-          renderGraficoPagamentos(est.formasPagamento || {});
-          renderTabelaProdutos(est.produtosMaisVendidos || []);
-          renderTabelaProdutosPorDia(est.produtosPorDia || {});
+      function renderCharts(agg) {
+        resetChart(chartPag);
+        resetChart(chartCat);
+        const labelsPag = Object.keys(agg.formasPagamento || {});
+        const dataPag = Object.values(agg.formasPagamento || {});
+        chartPag = new Chart(document.getElementById("chartPag"), {
+          type: "doughnut",
+          data: { labels: labelsPag, datasets: [{ data: dataPag }] },
+          options: { plugins: { legend: { position: "bottom" } } },
         });
 
-      // Inicializa dashboard automaticamente ao carregar
-      window.addEventListener(
-        "DOMContentLoaded",
-        inicializarDashboardComDiaAtual
-      );
+        const labelsCat = Object.keys(agg.categorias || {});
+        const dataCat = Object.values(agg.categorias || {});
+        chartCat = new Chart(document.getElementById("chartCat"), {
+          type: "doughnut",
+          data: { labels: labelsCat, datasets: [{ data: dataCat }] },
+          options: { plugins: { legend: { position: "bottom" } } },
+        });
+      }
+
+      // ===== Drop animado
+      const btnToggleDrop = document.getElementById("btnToggleDrop");
+      const dropConteudo = document.getElementById("dropConteudo");
+      const arrowDrop = document.getElementById("arrowDrop");
+      let dropOpen = false;
+      btnToggleDrop.addEventListener("click", () => {
+        dropOpen = !dropOpen;
+        if (dropOpen) {
+          dropConteudo.classList.add("open");
+          dropConteudo.style.maxHeight = dropConteudo.scrollHeight + "px";
+          btnToggleDrop.firstElementChild.textContent = "Ocultar";
+          arrowDrop.classList.add("down");
+        } else {
+          dropConteudo.style.maxHeight = "0px";
+          btnToggleDrop.firstElementChild.textContent = "Mostrar";
+          arrowDrop.classList.remove("down");
+          setTimeout(() => dropConteudo.classList.remove("open"), 450);
+        }
+      });
+
+      // ===== Novo layout com setas de rolagem =====
+      function renderProdutosPorDia(produtosPorDia) {
+        const wrap = document.getElementById("conteudoProdutosPorDia");
+        const dias = Object.keys(produtosPorDia || {}).sort(
+          (a, b) => new Date(a) - new Date(b)
+        );
+        if (!dias.length) {
+          wrap.innerHTML = `<div class="text-sm" style="color:var(--text-muted)">Sem dados por dia no período.</div>`;
+          return;
+        }
+
+        wrap.innerHTML = `
+        <div class="wrap-scroll">
+          <div class="scroll-shadow-left" style="opacity:0;"></div>
+          <div class="scroll-shadow-right" style="opacity:1;"></div>
+
+          <div class="scroll-arrow left"><i class="fas fa-chevron-left"></i></div>
+          <div class="scroll-arrow right"><i class="fas fa-chevron-right"></i></div>
+
+          <div class="dias-scroll" id="diasScroll">
+            ${dias
+              .map((d) => {
+                const produtos = produtosPorDia[d]
+                  .map(
+                    (p) => `
+                      <tr>
+                        <td>${p.produto}</td>
+                        <td>${p.quantidade}</td>
+                      </tr>
+                    `
+                  )
+                  .join("");
+                return `
+                  <div class="dia-card">
+                    <h4><i class="fas fa-calendar-day"></i> ${new Date(
+                      d
+                    ).toLocaleDateString("pt-BR")}</h4>
+                    <table><tbody>${produtos}</tbody></table>
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>
+        </div>
+      `;
+
+        // comportamento das setas
+        const scrollEl = document.getElementById("diasScroll");
+        const leftArrow = wrap.querySelector(".scroll-arrow.left");
+        const rightArrow = wrap.querySelector(".scroll-arrow.right");
+        const leftShadow = wrap.querySelector(".scroll-shadow-left");
+        const rightShadow = wrap.querySelector(".scroll-shadow-right");
+
+        const updateArrows = () => {
+          const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
+          const pos = scrollEl.scrollLeft;
+          leftArrow.style.opacity = pos > 5 ? "1" : "0";
+          rightArrow.style.opacity = pos < maxScroll - 5 ? "1" : "0";
+          leftShadow.style.opacity = pos > 5 ? "1" : "0";
+          rightShadow.style.opacity = pos < maxScroll - 5 ? "1" : "0";
+        };
+
+        leftArrow.addEventListener("click", () => {
+          scrollEl.scrollBy({ left: -250, behavior: "smooth" });
+        });
+        rightArrow.addEventListener("click", () => {
+          scrollEl.scrollBy({ left: 250, behavior: "smooth" });
+        });
+        scrollEl.addEventListener("scroll", updateArrows);
+
+        updateArrows();
+      }
+
+      // ===== Tabela detalhada
+      function filtraBusca(rows, texto) {
+        if (!texto) return rows;
+        const t = texto.trim().toLowerCase();
+        return rows.filter((v) =>
+          [v.item, v.produto, v.categoria, v.pagamento, v.valor, v.data]
+            .join(" ")
+            .toLowerCase()
+            .includes(t)
+        );
+      }
+      function paginaAtual(rows) {
+        const ini = (pagina - 1) * porPagina;
+        return rows.slice(ini, ini + porPagina);
+      }
+      function renderTabela() {
+        const wrap = document.getElementById("tabelaWrap");
+        const buscaGlobal = (
+          document.getElementById("buscaTabelaTop").value ||
+          document.getElementById("buscaTabela").value ||
+          ""
+        ).trim();
+        const filtrados = filtraBusca(
+          vendasDetalhadas,
+          filtroTexto || buscaGlobal
+        );
+        const total = filtrados.length;
+        const totalPgs = Math.max(1, Math.ceil(total / porPagina));
+        if (pagina > totalPgs) pagina = totalPgs;
+
+        if (!total) {
+          wrap.innerHTML = `<div class="text-center py-8" style="color:var(--text-muted)"><i class="fas fa-inbox text-3xl mb-2"></i><p>Nenhuma venda encontrada.</p></div>`;
+        } else {
+          const page = paginaAtual(filtrados);
+          wrap.innerHTML = `
+              <div class="overflow-x-auto">
+                <table class="table-modern">
+                  <thead><tr><th>Item</th><th>Produto</th><th>Categoria</th><th>Pagamento</th><th>Valor</th><th>Data</th></tr></thead>
+                  <tbody>
+                    ${page
+                      .map(
+                        (v) => `
+                      <tr>
+                        <td>${v.item ?? ""}</td>
+                        <td class="font-semibold">${v.produto ?? ""}</td>
+                        <td>${v.categoria ?? ""}</td>
+                        <td>${v.pagamento ?? ""}</td>
+                        <td class="font-extrabold" style="color:var(--success)">${BRL.format(
+                          parseFloat(v.valor) || 0
+                        )}</td>
+                        <td>${
+                          typeof v.data === "string"
+                            ? v.data
+                            : new Date(v.data).toLocaleDateString("pt-BR")
+                        }</td>
+                      </tr>`
+                      )
+                      .join("")}
+                  </tbody>
+                </table>
+              </div>`;
+        }
+        document.getElementById("pgInfo").textContent = `${Math.min(
+          (pagina - 1) * porPagina + 1,
+          total
+        )}–${Math.min(pagina * porPagina, total)} de ${total}`;
+        document.getElementById("prevPg").disabled = pagina <= 1;
+        document.getElementById("nextPg").disabled =
+          pagina >= Math.ceil(total / porPagina);
+      }
+
+      // ===== Exportação para CSV =====
+      function downloadCSV(filename, rows) {
+        if (!rows || !rows.length) {
+          alert("Não há dados para exportar.");
+          return;
+        }
+
+        const header = [
+          "Item",
+          "Produto",
+          "Categoria",
+          "Pagamento",
+          "Valor",
+          "Data",
+          "Timestamp",
+        ];
+        const lines = [header.join(";")].concat(
+          rows.map((v) =>
+            [
+              v.item ?? "",
+              `"${(v.produto || "").replace(/"/g, '""')}"`,
+              `"${(v.categoria || "").replace(/"/g, '""')}"`,
+              v.pagamento ?? "",
+              v.valor != null
+                ? Number(v.valor).toString().replace(".", ",")
+                : "",
+              `"${v.data || ""}"`,
+              v.timestamp ?? "",
+            ].join(";")
+          )
+        );
+
+        const blob = new Blob(["\ufeff" + lines.join("\n")], {
+          type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // ===== Fluxo principal
+      async function atualizar(di, df) {
+        msg("Carregando…");
+        vendasDetalhadas = await carregarVendasIntervalo(di, df);
+        const agg = agregaDosDetalhes(vendasDetalhadas);
+
+        renderKPIs(agg);
+        renderListaValores(agg.formasPagamento, "listaPagamentos");
+        renderListaValores(agg.categorias, "listaCategorias");
+
+        // ✅ render tabela de dias
+        renderTabelaDiasSelecionados(agg.vendasPorDia);
+
+        renderTopProdutos(agg.produtosMaisVendidos);
+        renderCharts(agg);
+        renderProdutosPorDia(agg.produtosPorDia);
+        pagina = 1;
+        filtroTexto = "";
+        renderTabela();
+
+        msg(
+          `Período: ${di} a ${df} • ${vendasDetalhadas.length} venda(s) carregadas`
+        );
+      }
+
+      async function atualizarSomenteDiaSelecionado() {
+        const di = document.getElementById("dataInicio").value;
+        const df = document.getElementById("dataFim").value;
+        const icon = document.getElementById("iconRefresh");
+        try {
+          icon.classList.add("spin");
+          await atualizar(di, df);
+        } finally {
+          setTimeout(() => icon.classList.remove("spin"), 600);
+        }
+      }
+
+      // ===== Eventos UI
+      document.getElementById("prevPg").addEventListener("click", () => {
+        if (pagina > 1) {
+          pagina--;
+          renderTabela();
+        }
+      });
+      document.getElementById("nextPg").addEventListener("click", () => {
+        pagina++;
+        renderTabela();
+      });
+      document.getElementById("buscaTabela").addEventListener("input", (e) => {
+        filtroTexto = e.target.value;
+        pagina = 1;
+        renderTabela();
+      });
+      document
+        .getElementById("buscaTabelaTop")
+        .addEventListener("input", (e) => {
+          filtroTexto = e.target.value;
+          pagina = 1;
+          renderTabela();
+        });
+      document
+        .getElementById("exportarCSV")
+        .addEventListener("click", () =>
+          downloadCSV(
+            `vendas_${document.getElementById("dataInicio").value}_a_${
+              document.getElementById("dataFim").value
+            }.csv`,
+            vendasDetalhadas
+          )
+        );
+      document
+        .getElementById("filtroForm")
+        .addEventListener("submit", async (ev) => {
+          ev.preventDefault();
+          const di = document.getElementById("dataInicio").value;
+          const df = document.getElementById("dataFim").value;
+          if (!di || !df) return;
+          await atualizar(di, df);
+        });
+      document
+        .getElementById("btnRefreshDia")
+        .addEventListener("click", atualizarSomenteDiaSelecionado);
+
+      // Boot
+      window.addEventListener("DOMContentLoaded", async () => {
+        const hoje = hojeISO();
+        document.getElementById("dataInicio").value = hoje;
+        document.getElementById("dataFim").value = hoje;
+        await atualizar(hoje, hoje);
+      });
     </script>
   </body>
 </html>
