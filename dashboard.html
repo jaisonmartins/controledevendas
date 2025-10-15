@@ -438,7 +438,7 @@
       <div class="card p-6 mb-6">
         <form
           id="filtroForm"
-          class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
         >
           <div>
             <label
@@ -664,13 +664,11 @@
         themeIcon.className = t === "dark" ? "fas fa-sun" : "fas fa-moon";
       }
       (() => {
-        const preferDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
-        applyTheme(
-          localStorage.getItem("theme") || (preferDark ? "dark" : "light")
-        );
+        const savedTheme = localStorage.getItem("theme");
+        const defaultTheme = savedTheme || "light"; // sempre inicia claro
+        applyTheme(defaultTheme);
       })();
+
       themeBtn.addEventListener("click", () => {
         const cur = document.documentElement.getAttribute("data-theme");
         applyTheme(cur === "dark" ? "light" : "dark");
